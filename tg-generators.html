@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GenBox — генераторы для Telegram</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f1420; --card:#171e2e; --card2:#1d2638; --text:#eef2f9; --muted:#8b98ad;
+  --acc:#3390ec; --acc2:#4fb8ff; --ok:#38ef7d; --bad:#ff5f6d; --gold:#ffd700;
+  --radius:16px;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  min-height:100vh; padding-bottom:96px;
+}
+h1,h2,h3{margin:0;font-weight:700}
+.app-header{position:sticky;top:0;z-index:10;background:linear-gradient(135deg,#1b2a4a,#0f1420);padding:16px 16px 12px;border-bottom:1px solid #26314a}
+.app-header h1{font-size:20px;letter-spacing:.3px}
+.app-header .sub{color:var(--muted);font-size:12.5px;margin-top:2px}
+.app-header .badge{display:inline-block;margin-left:8px;font-size:10px;font-weight:700;color:#08121f;background:var(--acc);border-radius:20px;padding:2px 8px;vertical-align:2px}
+nav.tabs{display:flex;gap:6px;position:sticky;top:52px;z-index:9;background:rgba(15,20,32,.97);padding:10px 12px;overflow-x:auto;border-bottom:1px solid #26314a}
+nav.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;border:none;cursor:pointer;font-family:inherit;font-weight:600;font-size:13px;color:var(--muted);background:var(--card);border-radius:12px;padding:9px 14px;transition:.15s}
+.tab.active{background:var(--acc);color:#fff}
+main{max-width:480px;margin:0 auto;padding:14px 12px}
+section.page{display:none}
+section.page.active{display:block}
+.card{background:var(--card);border:1px solid #26314a;border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.card h2{font-size:16px;display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.card .hint{color:var(--muted);font-size:12.5px;line-height:1.45;margin-top:4px}
+label{display:block;font-size:12.5px;color:var(--muted);margin:12px 0 6px;font-weight:600}
+input[type=text],textarea{
+  width:100%;background:var(--card2);border:1px solid #2e3a55;color:var(--text);
+  border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;outline:none;
+}
+input[type=text]:focus,textarea:focus{border-color:var(--acc)}
+textarea{resize:vertical;min-height:70px}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  background:var(--acc);color:#fff;border:none;border-radius:12px;
+  padding:13px 18px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;width:100%;transition:.15s;
+}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:var(--card2);color:var(--text)}
+.btn.small{width:auto;padding:8px 12px;font-size:13px;border-radius:10px}
+.btn.gold{background:linear-gradient(135deg,#f5af19,#f12711)}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:8px}
+.row .btn{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{background:var(--card2);border:1px solid #2e3a55;color:var(--text);border-radius:20px;padding:9px 14px;font-size:13.5px;cursor:pointer;font-family:inherit;transition:.15s}
+.chip.active{background:var(--acc);border-color:var(--acc);font-weight:700}
+.name-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.name-item{display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid #2e3a55;border-radius:12px;padding:10px 12px}
+.name-item .nm{flex:1;font-family:'Montserrat',sans-serif;font-weight:700;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.icon-btn{border:none;background:var(--card);color:var(--muted);border-radius:9px;padding:7px 10px;cursor:pointer;font-size:12px;font-family:inherit;font-weight:600}
+.icon-btn:hover{color:var(--text)}
+.icon-btn.primary{color:var(--acc2)}
+.font-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.font-item{background:var(--card2);border:1px solid #2e3a55;border-radius:12px;padding:12px 14px;cursor:pointer;transition:.15s}
+.font-item.active{border-color:var(--acc);background:#14233d}
+.font-item .fname{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.font-item .fprev{font-size:17px;margin-top:5px;word-break:break-word;line-height:1.3}
+.tpl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.tpl{position:relative;border-radius:14px;overflow:hidden;aspect-ratio:1;cursor:pointer;border:2px solid transparent;transition:.15s}
+.tpl.active{border-color:var(--acc)}
+.tpl .th{width:100%;height:100%;object-fit:cover;display:block}
+.tpl .lock{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);color:var(--gold);font-size:14px;border-radius:8px;padding:2px 7px;font-weight:700}
+.tpl .tname{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);color:#fff;font-size:10.5px;text-align:center;padding:4px 2px;font-weight:600}
+.sticker-preview{display:flex;justify-content:center;margin:14px 0}
+.sticker-preview canvas{width:220px;height:220px;border-radius:18px;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.style-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.style-item{display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid #2e3a55;border-radius:12px;padding:10px 12px;cursor:pointer}
+.style-item.active{border-color:var(--acc);background:#14233d}
+.style-item .sname{font-weight:700;font-size:14px}
+.style-item .sdesc{color:var(--muted);font-size:12px;margin-top:2px}
+.switch-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+pre.out{background:#0a0e18;border:1px dashed #2e3a55;border-radius:12px;padding:12px;font-family:inherit;font-size:14px;white-space:pre-wrap;word-break:break-word;margin:12px 0 0;color:var(--text)}
+.notice{background:#14233d;border:1px solid #2b4870;border-radius:12px;padding:11px 13px;font-size:12.5px;line-height:1.5;color:#c8d8f0;margin-top:12px}
+.notice.ok{border-color:#1d5c3a;background:#0f2a1c;color:#bfeccd}
+.modal-bg{position:fixed;inset:0;background:rgba(5,8,15,.7);display:none;align-items:flex-end;justify-content:center;z-index:50}
+.modal-bg.open{display:flex}
+.modal{background:var(--card);border:1px solid #2e3a55;border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:20px 18px 26px}
+.modal h3{margin:0 0 8px;font-size:17px}
+.modal p{color:var(--muted);font-size:13.5px;line-height:1.55;margin:8px 0 0}
+.modal .btn{margin-top:14px}
+.footer-note{color:#5b6a81;font-size:11.5px;text-align:center;padding:18px 16px 8px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <h1>GenBox<span class="badge">Mini App</span></h1>
+  <div class="sub" id="userGreeting">Генераторы ников, стикеров, шрифтов и текста — для Telegram</div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-page="nicks">Ники</button>
+  <button class="tab" data-page="stickers">Стикеры</button>
+  <button class="tab" data-page="fonts">Шрифты</button>
+  <button class="tab" data-page="styles">Стиль текста</button>
+</nav>
+
+<main>
+  <!-- ============ НИКИ ============ -->
+  <section class="page active" id="page-nicks">
+    <div class="card">
+      <h2>Генератор ников</h2>
+      <div class="hint">Красивые свободные username для Telegram. В никнейме разрешены только латиница, цифры и «_» — поэтому генерируем именно такие.</div>
+      <label>Ключевое слово (необязательно)</label>
+      <input type="text" id="nickSeed" placeholder="например: night">
+      <label>Стиль</label>
+      <div class="chips" id="nickStyleChips">
+        <span class="chip active" data-v="gamer">Геймер</span>
+        <span class="chip" data-v="soft">Мягкий</span>
+        <span class="chip" data-v="tech">Тех</span>
+        <span class="chip" data-v="dark">Тёмный</span>
+      </div>
+      <button class="btn" id="nickGenBtn" style="margin-top:14px">Сгенерировать</button>
+      <div class="name-list" id="nickList"></div>
+      <div class="hint" style="margin-top:10px">Кнопка «@» открывает профиль в Telegram — если профиль существует, ник занят и надо выбрать другой.</div>
+    </div>
+  </section>
+
+  <!-- ============ СТИКЕРЫ ============ -->
+  <section class="page" id="page-stickers">
+    <div class="card">
+      <h2>Стикер с ником</h2>
+      <div class="hint">Рисуем стикер 512×512 с твоим ником. Используй шаблоны: базовые — бесплатно, премиум — для Premium-подписчиков или за 1 звезду.</div>
+      <label>Текст на стикере</label>
+      <input type="text" id="stickerText" placeholder="твой ник или имя" maxlength="16">
+      <label>Шаблон</label>
+      <div class="tpl-grid" id="tplGrid"></div>
+      <div class="sticker-preview"><canvas id="stickerCanvas" width="512" height="512"></canvas></div>
+      <div class="notice" id="premiumNotice" style="display:none">Этот шаблон для Premium-подписчиков. Открой его за 1 звезду — оплата через Telegram Stars.</div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn ghost" id="stickerUnlock" style="display:none">Открыть за 1 звезду</button>
+        <button class="btn" id="stickerDownload">Скачать PNG</button>
+      </div>
+      <div class="notice ok" id="stickerTip">Как добавить: в Telegram открой @Stickers → /newpack → отправь этот PNG → готово. Премиум-подписчики могут «улучшить» обычный стикер до анимированного кнопкой в меню стикера.</div>
+    </div>
+  </section>
+
+  <!-- ============ ШРИФТЫ ============ -->
+  <section class="page" id="page-fonts">
+    <div class="card">
+      <h2>Красивые шрифты</h2>
+      <div class="hint">Преобразует текст в стильные Unicode-шрифты для имени профиля, био и сообщений. В username это не сработает — там только латиница.</div>
+      <label>Текст</label>
+      <input type="text" id="fontInput" placeholder="например: Nikita Cool">
+      <div class="font-list" id="fontList"></div>
+    </div>
+  </section>
+
+  <!-- ============ СТИЛЬ ТЕКСТА ============ -->
+  <section class="page" id="page-styles">
+    <div class="card">
+      <h2>Текст в стиле</h2>
+      <div class="hint">Переписывает твою фразу в нужном тоне: строгом, весёлом, деловом и другом.</div>
+      <label>Текст</label>
+      <textarea id="styleInput" placeholder="Введи фразу, например: созвон перенесли на завтра"></textarea>
+      <label>Стиль</label>
+      <div class="style-list" id="styleList"></div>
+      <label>Дополнительно</label>
+      <div class="switch-row" id="caseChips">
+        <span class="chip" data-case="normal">Как есть</span>
+        <span class="chip active" data-case="sentence">С заглавной</span>
+        <span class="chip" data-case="upper">КАПС</span>
+      </div>
+      <button class="btn" id="styleGenBtn" style="margin-top:14px">Сгенерировать</button>
+      <pre class="out" id="styleOut" style="display:none"></pre>
+    </div>
+  </section>
+
+  <div class="footer-note">Локально, без серверов: генерация происходит прямо в твоём устройстве.</div>
+</main>
+
+<!-- Модалка -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3 id="modalTitle">Заголовок</h3>
+    <p id="modalText">Текст</p>
+    <button class="btn ghost" id="modalClose">Понятно</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ================= Конфигурация ================= */
+const TG_PAY_CONFIG = {
+  invoiceUrl: ""  // сюда — ссылка-инвойс Telegram Stars после настройки платёжной системы в BotFather
+};
+const BOT_USERNAME = ""; // например "mycoolbot" — для кнопки «поделиться»
+
+/* ================= Инициализация Telegram ================= */
+let TG = null;
+function initTG(){
+  try{
+    if(window.Telegram && Telegram.WebApp){
+      TG = Telegram.WebApp;
+      TG.ready();
+      TG.expand();
+      const tp = TG.themeParams || {};
+      if(tp.bg_color){document.body.style.setProperty('--bg', tp.bg_color);}
+      if(tp.text_color){document.body.style.setProperty('--text', tp.text_color);}
+      if(tp.hint_color){document.body.style.setProperty('--muted', tp.hint_color);}
+      if(tp.button_color){document.body.style.setProperty('--acc', tp.button_color);}
+      if(tp.button_text_color){document.body.style.setProperty('--acc-text', tp.button_text_color);}
+    }
+  }catch(e){ /* вне Telegram — работаем как обычная страница */ }
+}
+initTG();
+
+function tgUser(){
+  try{ return (TG && TG.initDataUnsafe && TG.initDataUnsafe.user) || null; }catch(e){ return null; }
+}
+function isPremiumUser(){
+  const u = tgUser();
+  if(u && u.is_premium) return true;
+  try{ return localStorage.getItem('gb_premium_unlocked') === '1'; }catch(e){ return false; }
+}
+function greet(){
+  const u = tgUser();
+  const el = document.getElementById('userGreeting');
+  if(u && u.first_name){
+    const tag = u.is_premium ? ' (Premium)' : '';
+    el.textContent = 'Привет, ' + u.first_name + tag + '! Генераторы ников, стикеров, шрифтов и текста.';
+  }
+}
+greet();
+
+/* ================= Табы ================= */
+const tabs = document.querySelectorAll('.tab');
+tabs.forEach(t=>{
+  t.addEventListener('click', ()=>{
+    tabs.forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.querySelectorAll('section.page').forEach(s=>s.classList.remove('active'));
+    document.getElementById('page-' + t.dataset.page).classList.add('active');
+  });
+});
+
+/* ================= Модалка ================= */
+function showModal(title, text){
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalText').innerHTML = text;
+  document.getElementById('modalBg').classList.add('open');
+}
+document.getElementById('modalClose').addEventListener('click', ()=>{
+  document.getElementById('modalBg').classList.remove('open');
+});
+document.getElementById('modalBg').addEventListener('click', (e)=>{
+  if(e.target.id === 'modalBg') document.getElementById('modalBg').classList.remove('open');
+});
+
+function copyText(txt, okMsg){
+  const done = ()=>{ if(okMsg) { const el=document.getElementById('copyToast')||null; if(el){el.textContent=okMsg;} } };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done).catch(()=>fallbackCopy(txt, done));
+  } else { fallbackCopy(txt, done); }
+  pushToast(okMsg || 'Скопировано');
+}
+function fallbackCopy(txt, cb){
+  const ta=document.createElement('textarea');
+  ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); }catch(e){}
+  document.body.removeChild(ta); cb && cb();
+}
+function pushToast(msg){
+  let t=document.getElementById('toast');
+  if(!t){
+    t=document.createElement('div');
+    t.id='toast';
+    t.style.cssText='position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#1d2638;color:#fff;padding:10px 18px;border-radius:12px;font-size:13.5px;font-weight:600;z-index:99;border:1px solid #2e3a55;box-shadow:0 8px 24px rgba(0,0,0,.4);transition:opacity .3s;opacity:0;';
+    document.body.appendChild(t);
+  }
+  t.textContent=msg; t.style.opacity='1';
+  clearTimeout(t._h); t._h=setTimeout(()=>{t.style.opacity='0';},1600);
+}
+
+/* =========================================================
+   1. ГЕНЕРАТОР НИКОВ
+========================================================= */
+const NICKS = {
+  gamer: {
+    adj: ['Lunar','Pixel','Neon','Nova','Turbo','Ultra','Mega','Shadow','Rapid','Blaze','Hyper','Epic','Dark','Frost','Toxic','Iron','Cyber','Retro','Crypto','Quantum'],
+    noun: ['Wolf','Falcon','Tiger','Dragon','Eagle','Knight','Hunter','Wizard','Phantom','Storm','Comet','Vortex','Raven','Cobra','Titan','Reaper','Ninja','Oracle','Rocket','Byte']
+  },
+  soft: {
+    adj: ['Lucky','Cozy','Sunny','Sweet','Golden','Soft','Dreamy','Cute','Bright','Quiet','Happy','Gentle','Mellow','Creamy','Bliss'],
+    noun: ['Bunny','Panda','Kitty','Puppy','Bear','Honey','Muffin','Cookie','Pearl','Moon','Star','Cloud','Flower','Bubble','Sprout']
+  },
+  tech: {
+    adj: ['Cyber','Data','Null','Hex','Bit','Meta','Neo','Quantum','Binary','Vector','Logic','Hyper','Synth','Pixel','Alpha'],
+    noun: ['Core','Code','Node','Stack','Matrix','Kernel','Socket','Packet','Proxy','Claw','Script','Frame','Wave','Loop','Cache']
+  },
+  dark: {
+    adj: ['Dark','Silent','Grim','Void','Ghost','Cursed','Black','Midnight','Wicked','Fallen','Deadly','Shadow','Oblivion','Noctis','Ashen'],
+    noun: ['Reaper','Wraith','Specter','Dread','Raven','Hound','Fang','Crow','Viper','Phantom','Mist','Requiem','Hollow','Nightmare','Omen']
+  }
+};
+
+function rnd(a){ return a[Math.floor(Math.random()*a.length)]; }
+function genNick(style){
+  const pool = NICKS[style] || NICKS.gamer;
+  const base = rnd(pool.adj) + rnd(pool.noun);
+  const suffix = rnd(['','','','xX','Xx','_x','x_','07','21','99','_2026','42','7','1','0','_pro','King','Best','One']);
+  return base + suffix;
+}
+function fillNickList(){
+  const style = (document.querySelector('#nickStyleChips .chip.active')||{}).dataset ? document.querySelector('#nickStyleChips .chip.active').dataset.v : 'gamer';
+  const seed = document.getElementById('nickSeed').value.trim().replace(/[^a-zA-Z0-9_]/g,'');
+  const list = document.getElementById('nickList');
+  const seen = new Set(); const items = [];
+  while(items.length < 9){
+    let n = seed ? seed + rnd(['','_','_x','x_','07','21','99','42','1','7']) : genNick(style);
+    n = n.replace(/[^a-zA-Z0-9_]/g,'');
+    if(n.length > 2 && !seen.has(n.toLowerCase())){ seen.add(n.toLowerCase()); items.push(n); }
+  }
+  list.innerHTML = '';
+  items.forEach(n=>{
+    const row = document.createElement('div');
+    row.className = 'name-item';
+    row.innerHTML =
+      '<span class="nm">@' + n + '</span>' +
+      '<button class="icon-btn primary" data-act="check">@</button>' +
+      '<button class="icon-btn" data-act="copy">Копировать</button>';
+    row.querySelector('[data-act=copy]').addEventListener('click', ()=>{ copyText(n, 'Ник скопирован'); });
+    row.querySelector('[data-act=check]').addEventListener('click', ()=>{
+      window.open('https://t.me/' + n, '_blank');
+    });
+    list.appendChild(row);
+  });
+}
+document.getElementById('nickGenBtn').addEventListener('click', fillNickList);
+document.querySelectorAll('#nickStyleChips .chip').forEach(c=>{
+  c.addEventListener('click', ()=>{
+    document.querySelectorAll('#nickStyleChips .chip').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active');
+  });
+});
+document.getElementById('nickSeed').addEventListener('keydown', e=>{ if(e.key==='Enter'){ fillNickList(); } });
+fillNickList();
+
+/* =========================================================
+   2. ГЕНЕРАТОР СТИКЕРОВ
+========================================================= */
+const STICKER_BG = [
+  { id:'grad', name:'Градиент',   premium:false, c1:'#3a7bd5', c2:'#00d2ff', kind:'grad'  },
+  { id:'neon', name:'Неон',       premium:false, c1:'#0f0c29', c2:'#7b2ff7', kind:'grad'  },
+  { id:'mint', name:'Мята',       premium:false, c1:'#11998e', c2:'#38ef7d', kind:'grad'  },
+  { id:'space',name:'Космос',     premium:true,  c1:'#000428', c2:'#2b59c3', kind:'stars' },
+  { id:'gold', name:'Золото',     premium:true,  c1:'#7a5c00', c2:'#ffd700', kind:'shine' },
+  { id:'matrix',name:'Матрица',   premium:true,  c1:'#002b00', c2:'#0a0a0a', kind:'code'  },
+  { id:'pink', name:'Розовый неон',premium:true, c1:'#fc466b', c2:'#3f5efb', kind:'grad'  }
+];
+let curTpl = 0;
+
+function drawSticker(){
+  const t = STICKER_BG[curTpl];
+  const text = (document.getElementById('stickerText').value.trim() || '@ник');
+  const cv = document.getElementById('stickerCanvas');
+  const ctx = cv.getContext('2d');
+  const S = 512;
+  ctx.clearRect(0,0,S,S);
+
+  const g = ctx.createLinearGradient(0,0,S,S);
+  g.addColorStop(0,t.c1); g.addColorStop(1,t.c2);
+  ctx.fillStyle = g; ctx.fillRect(0,0,S,S);
+
+  if(t.kind==='stars'){
+    for(let i=0;i<90;i++){
+      ctx.fillStyle = 'rgba(255,255,255,' + (0.15+Math.random()*0.7) + ')';
+      const r = Math.random()*1.8+0.4;
+      ctx.beginPath();
+      ctx.arc(Math.random()*S, Math.random()*S, r, 0, Math.PI*2);
+      ctx.fill();
+    }
+    const mg = ctx.createRadialGradient(S*0.75,S*0.25,10,S*0.75,S*0.25,S*1.1);
+    mg.addColorStop(0,'rgba(255,255,255,.5)'); mg.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=mg; ctx.fillRect(0,0,S,S);
+  }
+  if(t.kind==='shine'){
+    const sg = ctx.createLinearGradient(0,0,S,S);
+    sg.addColorStop(0,'rgba(255,255,255,.45)'); sg.addColorStop(.25,'rgba(255,255,255,0)');
+    sg.addColorStop(.55,'rgba(255,255,255,.25)'); sg.addColorStop(.8,'rgba(255,255,255,0)');
+    ctx.fillStyle=sg; ctx.fillRect(0,0,S,S);
+  }
+  if(t.kind==='code'){
+    ctx.font='900 14px "Courier New",monospace';
+    for(let y=30;y<S;y+=34){
+      let line='';
+      for(let x=0;x<24;x++) line += Math.random()<.5 ? (Math.random()<.5?'0':'1') : rnd(['01','10','11','00']);
+      ctx.fillStyle='rgba(0,255,70,.10)';
+      ctx.fillText(line, 16, y);
+    }
+  }
+
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  let fs = 200;
+  ctx.font = '900 ' + fs + 'px Montserrat, sans-serif';
+  while(ctx.measureText(text).width > S*0.84 && fs > 30){
+    fs -= 8;
+    ctx.font = '900 ' + fs + 'px Montserrat, sans-serif';
+  }
+  const cx = S/2, cy = S/2;
+  ctx.lineJoin='round';
+  ctx.strokeStyle='rgba(0,0,0,.85)';
+  ctx.lineWidth = Math.max(10, fs*0.14);
+  ctx.strokeText(text, cx, cy);
+  ctx.lineWidth = Math.max(4, fs*0.055);
+  ctx.strokeStyle='rgba(255,255,255,.9)';
+  ctx.strokeText(text, cx, cy);
+  ctx.fillStyle = t.kind==='gold' ? '#fff7e0' : '#ffffff';
+  ctx.fillText(text, cx, cy);
+}
+document.getElementById('stickerText').addEventListener('input', ()=>{ drawSticker(); updatePremiumUI(); });
+
+function buildTplGrid(){
+  const grid = document.getElementById('tplGrid');
+  grid.innerHTML='';
+  STICKER_BG.forEach((t,i)=>{
+    const c = document.createElement('div');
+    c.className='tpl'+(i===curTpl?' active':'');
+    const thr = document.createElement('canvas');
+    thr.width=128; thr.height=128;
+    const g2 = thr.getContext('2d');
+    const gg = g2.createLinearGradient(0,0,128,128);
+    gg.addColorStop(0,t.c1); gg.addColorStop(1,t.c2);
+    g2.fillStyle=gg; g2.fillRect(0,0,128,128);
+    if(t.kind==='stars'){ g2.fillStyle='#fff'; for(let k=0;k<25;k++){ g2.globalAlpha=Math.random()*.8+.2; g2.fillRect(Math.random()*128,Math.random()*128,2,2);} g2.globalAlpha=1; }
+    c.innerHTML = '<canvas class="th"></canvas>' + (t.premium?'<span class="lock">1 &#9733;</span>':'') + '<span class="tname">'+t.name+'</span>';
+    c.querySelector('canvas.th').getContext('2d').drawImage(thr,0,0,128,128);
+    c.addEventListener('click', ()=>{
+      curTpl=i;
+      grid.querySelectorAll('.tpl').forEach(x=>x.classList.remove('active'));
+      c.classList.add('active');
+      updatePremiumUI(); drawSticker();
+    });
+    grid.appendChild(c);
+  });
+}
+function updatePremiumUI(){
+  const t = STICKER_BG[curTpl];
+  const locked = t.premium && !isPremiumUser();
+  document.getElementById('premiumNotice').style.display = locked ? 'block' : 'none';
+  document.getElementById('stickerUnlock').style.display = locked ? 'inline-flex' : 'none';
+  document.getElementById('stickerDownload').style.display = locked ? 'none' : 'inline-flex';
+}
+function unlockSticker(){
+  if(!TG || !TG.openInvoice || !TG_PAY_CONFIG.invoiceUrl){
+    showModal('Stars пока не подключены',
+      'Чтобы принимать оплату: <br>1. В BotFather: <b>/mybots</b> → твой бот → <b>Payments</b> → <b>Enable</b> → <b>Telegram Stars</b>.<br>2. Создайте ссылку-инвойс (Bot API: createInvoiceLink, XTR) и вставьте её в <b>TG_PAY_CONFIG.invoiceUrl</b> в начале файла <b>tg-generators.html</b>.');
+    return;
+  }
+  TG.openInvoice(TG_PAY_CONFIG.invoiceUrl, (status)=>{
+    if(status==='paid'){
+      try{ localStorage.setItem('gb_premium_unlocked','1'); }catch(e){}
+      updatePremiumUI(); drawSticker();
+      pushToast('Доступ открыт!');
+    } else if(status==='failed' || status==='cancelled'){
+      pushToast('Оплата не прошла');
+    }
+  });
+}
+document.getElementById('stickerUnlock').addEventListener('click', unlockSticker);
+document.getElementById('stickerDownload').addEventListener('click', ()=>{
+  const cv = document.getElementById('stickerCanvas');
+  cv.toBlob(function(blob){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'sticker.png';
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 400);
+    pushToast('Стикер скачан');
+  }, 'image/png');
+});
+buildTplGrid();
+drawSticker();
+updatePremiumUI();
+
+/* =========================================================
+   3. КРАСИВЫЕ ШРИФТЫ (Unicode)
+========================================================= */
+function rangeMap(uStart, lStart, dStart){
+  const m = {};
+  for(let i=0;i<26;i++) m[String.fromCharCode(65+i)] = String.fromCharCode(uStart+i);
+  for(let i=0;i<26;i++) m[String.fromCharCode(97+i)] = String.fromCharCode(lStart+i);
+  for(let i=0;i<10;i++){
+    const c = String.fromCharCode(48+i);
+    if(dStart){
+      const cp = i===0 ? 0x24EA : 0x2460+(i-1);
+      m[c] = String.fromCharCode(cp);
+    } else {
+      m[c] = c;
+    }
+  }
+  return m;
+}
+const FONT_STYLES = [
+  { id:'bold',        name:'Жирный',             map:()=>rangeMap(0x1D400,0x1D41A,0x1D7CE) },
+  { id:'italic',      name:'Курсив',             map:()=>rangeMap(0x1D434,0x1D44E,null) },
+  { id:'boldItalic',  name:'Жирный курсив',      map:()=>rangeMap(0x1D468,0x1D482,null) },
+  { id:'sans',        name:'Гротеск',            map:()=>rangeMap(0x1D5A0,0x1D5BA,null) },
+  { id:'sansBold',    name:'Гротеск жирный',     map:()=>rangeMap(0x1D5D4,0x1D5EE,null) },
+  { id:'sansItalic',  name:'Гротеск курсив',     map:()=>rangeMap(0x1D608,0x1D622,null) },
+  { id:'sansBoldItal',name:'Гротеск жирный курсив',map:()=>rangeMap(0x1D63C,0x1D656,null) },
+  { id:'mono',        name:'Моноширинный',       map:()=>rangeMap(0x1D670,0x1D68A,null) },
+  { id:'circled',     name:'В кружочках',        map:()=>rangeMap(0x24B6,0x24D0,true) },
+  { id:'squared',     name:'В квадратах',        map:()=>rangeMap(0x1F130,0x1F150,null) }
+];
+const _fontMaps = {};
+function fontMap(id){
+  if(!_fontMaps[id]){
+    const s = FONT_STYLES.find(x=>x.id===id);
+    _fontMaps[id] = s ? s.map() : {};
+  }
+  return _fontMaps[id];
+}
+function convertFont(text, id){
+  const m = fontMap(id);
+  let out = '';
+  for(const ch of text){ out += (m[ch] || ch); }
+  return out;
+}
+function fillFontList(){
+  const input = document.getElementById('fontInput').value;
+  const list = document.getElementById('fontList');
+  list.innerHTML = '';
+  FONT_STYLES.forEach(s=>{
+    const item = document.createElement('div');
+    item.className = 'font-item';
+    const prev = input ? convertFont(input, s.id) : 'Пример текста';
+    item.innerHTML = '<div class="fname">'+s.name+'</div><div class="fprev">'+escapeHtml(prev)+'</div>';
+    item.addEventListener('click', ()=>{
+      if(input){ copyText(prev, 'Шрифт скопирован'); }
+    });
+    list.appendChild(item);
+  });
+}
+function escapeHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+document.getElementById('fontInput').addEventListener('input', fillFontList);
+fillFontList();
+
+/* =========================================================
+   4. СТИЛЬ ТЕКСТА
+========================================================= */
+const TEXT_STYLES = [
+  { id:'strict', name:'Строгий', desc:'Официально, без эмоций', wrap:(t)=>'Официально заявляю: ' + t + '.' },
+  { id:'business', name:'Деловой', desc:'Вежливо, по-рабочему', wrap:(t)=>'Добрый день. Рад сообщить: ' + t + '. С уважением к вам.' },
+  { id:'fun', name:'Весёлый', desc:'Живо и с юмором', wrap:(t)=>capitalize(t).replace(/[.!?]+$/,'') + '!! Ну вообще огонь, тут без вариантов' },
+  { id:'motivate', name:'Вдохновляющий', desc:'Мотивация и поддержка', wrap:(t)=>capitalize(t) + ' — и это только начало. Двигайся дальше, всё получится!' },
+  { id:'mystic', name:'Таинственный', desc:'Загадочно, с интригой', wrap:(t)=>'Говорят, ' + t.toLowerCase().replace(/[.!?]+$/,'') + '... или это только слухи?' },
+  { id:'short', name:'Телеграфный', desc:'Максимально кратко', wrap:(t)=>'Крч: ' + t.replace(/\s+/g,' ').replace(/[.!?]+$/,'') + '. Тчк.' },
+  { id:'polite', name:'Вежливый', desc:'Мягко и корректно', wrap:(t)=>'Будьте так добры, ' + t.toLowerCase().replace(/[.!?]+$/,'') + ', если вам не сложно.' },
+  { id:'sarcastic', name:'Ироничный', desc:'С лёгкой усмешкой', wrap:(t)=>'Да, конечно, ' + t.toLowerCase().replace(/[.!?]+$/,'') + ' — как будто я в этом сомневался.' }
+];
+function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+let curStyle = 'strict';
+let curCase = 'sentence';
+function fillStyleList(){
+  const list = document.getElementById('styleList');
+  list.innerHTML='';
+  TEXT_STYLES.forEach(s=>{
+    const item=document.createElement('div');
+    item.className='style-item'+(s.id===curStyle?' active':'');
+    item.innerHTML='<div><div class="sname">'+s.name+'</div><div class="sdesc">'+s.desc+'</div></div>';
+    item.addEventListener('click', ()=>{
+      curStyle=s.id;
+      list.querySelectorAll('.style-item').forEach(x=>x.classList.remove('active'));
+      item.classList.add('active');
+    });
+    list.appendChild(item);
+  });
+}
+document.querySelectorAll('#caseChips .chip').forEach(c=>{
+  c.addEventListener('click', ()=>{
+    document.querySelectorAll('#caseChips .chip').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active');
+    curCase = c.dataset.case;
+  });
+});
+document.getElementById('styleGenBtn').addEventListener('click', ()=>{
+  const raw = document.getElementById('styleInput').value.trim();
+  if(!raw){ showModal('Пустой текст', 'Сначала введи фразу.'); return; }
+  const st = TEXT_STYLES.find(x=>x.id===curStyle) || TEXT_STYLES[0];
+  let out = st.wrap(raw);
+  if(curCase==='upper') out = out.toUpperCase();
+  if(curCase==='lower') out = out.toLowerCase();
+  const el = document.getElementById('styleOut');
+  el.textContent = out;
+  el.style.display = 'block';
+  copyText(out, 'Текст скопирован');
+});
+fillStyleList();
+fillNickList();
+</script>
+</body>
+</html>
