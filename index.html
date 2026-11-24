@@ -220,9 +220,106 @@ input[type=text]:focus{border-color:rgba(255,255,255,.4)}
   border:1px solid var(--line);transition:opacity .3s;opacity:0;pointer-events:none;white-space:nowrap;
   box-shadow:0 10px 30px rgba(0,0,0,.8);
 }
+/* ==== Загрузочный экран ==== */
+.splash{
+  position:fixed;inset:0;z-index:100;background:#000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+  transition:opacity .6s ease;opacity:1;
+}
+.splash.hide{opacity:0;pointer-events:none}
+.splash-logo{
+  font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;color:#fff;
+  animation:splashPulse 1.6s ease-in-out infinite;
+  letter-spacing:1px;
+}
+@keyframes splashPulse{0%,100%{opacity:.55;transform:scale(.98)}50%{opacity:1;transform:scale(1)}}
+.splash-bar{width:150px;height:2px;background:rgba(255,255,255,.14);border-radius:2px;overflow:hidden;position:relative}
+.splash-bar::after{
+  content:"";position:absolute;inset:0;width:40%;
+  background:linear-gradient(90deg,transparent,#fff,transparent);
+  animation:splashScan 1.1s ease-in-out infinite;
+}
+@keyframes splashScan{from{left:-40%}to{left:100%}}
+/* ==== Открытка-результат юзернейма ==== */
+.postcard-wrap{display:none;margin-top:22px}
+.postcard-wrap.show{display:block;animation:pageIn .5s cubic-bezier(.2,.9,.3,1)}
+.postcard{
+  position:relative;border-radius:26px;overflow:hidden;padding:30px 22px 20px;min-height:210px;
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 24px 70px rgba(0,0,0,.85);
+  display:flex;flex-direction:column;justify-content:space-between;gap:18px;
+  transition:background .5s ease;
+}
+.postcard::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;
+  background:conic-gradient(from 0deg, transparent 240deg, rgba(255,255,255,.7) 300deg, transparent 340deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  animation:edgeMove 6s linear infinite;pointer-events:none;opacity:.9;
+}
+@keyframes edgeMove{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.pc-top{display:flex;justify-content:space-between;align-items:center;position:relative}
+.pc-badge{
+  font-size:10.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;
+  padding:5px 12px;border-radius:50px;border:1px solid rgba(255,255,255,.22);
+}
+.pc-badge.free{color:#38ef7d;border-color:rgba(56,239,125,.5)}
+.pc-badge.taken{color:#ff6b6b;border-color:rgba(255,107,107,.5)}
+.pc-badge.unknown{color:#b8b8c0;border-color:rgba(255,255,255,.22)}
+.pc-at{font-size:13px;opacity:.7;font-weight:600;letter-spacing:1px}
+.pc-nick{
+  font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:min(11.5vw,44px);
+  line-height:1.1;word-break:break-word;text-align:center;position:relative;
+}
+.pc-foot{
+  font-size:10.5px;letter-spacing:3px;text-transform:uppercase;opacity:.45;
+  text-align:center;position:relative;font-weight:600;
+}
+.pc-palettes{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;justify-content:center}
+.swatch{
+  width:34px;height:34px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,.22);
+  transition:.2s;position:relative;
+}
+.swatch:hover{transform:scale(1.12)}
+.swatch.active{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.18)}
+/* ==== Слайдер ==== */
+.slider-row{display:flex;align-items:center;gap:14px;margin-top:16px}
+.slider-row label{margin:0;flex:0 0 auto}
+input[type=range]{
+  flex:1;-webkit-appearance:none;appearance:none;height:4px;border-radius:4px;
+  background:rgba(255,255,255,.18);outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;
+  background:#fff;cursor:pointer;border:none;
+  box-shadow:0 2px 10px rgba(0,0,0,.8);
+}
+input[type=range]::-moz-range-thumb{
+  width:22px;height:22px;border-radius:50%;background:#fff;cursor:pointer;border:none;
+}
+.slider-val{font-family:'Space Grotesk',sans-serif;font-size:13px;color:#fff;font-weight:700;min-width:38px;text-align:right}
+.btn-row{display:flex;gap:8px;margin-top:10px}
+.btn-row .btn{flex:1}
+/* ==== Ландшафт / планшет ==== */
+@media (min-width:760px){
+  html,body{height:100%}
+  main{max-width:920px;padding:30px 28px}
+  #page-nicks .panel{display:grid;grid-template-columns:1.1fr 1fr;gap:34px;align-items:start}
+  #page-nicks .panel .sec-tag{grid-column:1/-1}
+  #page-nicks .postcard-wrap.show{display:block}
+  #page-stickers .panel{display:grid;grid-template-columns:1.1fr 1fr;gap:34px;align-items:start}
+  #page-stickers .panel .sec-tag{grid-column:1/-1}
+  .tpl-grid{grid-template-columns:repeat(4,1fr)}
+  .sticker-stage{width:min(300px,34vw)}
+}
 </style>
 </head>
 <body>
+
+<div class="splash" id="splash">
+  <div class="splash-logo">LincolnGenerator</div>
+  <div class="splash-bar"></div>
+</div>
 
 <canvas id="dust"></canvas>
 <div class="deco deco-cube"><div></div><div></div><div></div><div></div><div></div><div></div></div>
@@ -257,14 +354,16 @@ input[type=text]:focus{border-color:rgba(255,255,255,.4)}
         <span class="chip" data-v="max">Максимальный</span>
       </div>
       <button class="btn" id="nickGenBtn" style="margin-top:20px">Поиск</button>
-      <div class="orbit-result" id="nickResult">
-        <div class="orb">
-          <div class="orb-ring"></div>
-          <div class="orb-core">
-            <div class="nk" id="nickOut">@…</div>
-            <div class="st unknown" id="nickStatus">Поиск…</div>
+      <div class="postcard-wrap" id="postcardWrap">
+        <div class="postcard" id="postcard">
+          <div class="pc-top">
+            <span class="pc-badge unknown" id="pcBadge">Поиск…</span>
+            <span class="pc-at">@</span>
           </div>
+          <div class="pc-nick" id="pcNick">…</div>
+          <div class="pc-foot">LincolnGenerator</div>
         </div>
+        <div class="pc-palettes" id="pcPalettes"></div>
         <div class="orbit-actions">
           <button class="btn small" id="nickCopy">Копировать</button>
         </div>
@@ -281,8 +380,16 @@ input[type=text]:focus{border-color:rgba(255,255,255,.4)}
       <label style="margin-top:18px">Шаблон</label>
       <div class="tpl-grid" id="tplGrid"></div>
       <div class="sticker-stage"><canvas id="stickerCanvas" width="512" height="512"></canvas></div>
+      <div class="slider-row">
+        <label for="stickerSize">Размер</label>
+        <input type="range" id="stickerSize" min="60" max="180" value="140">
+        <span class="slider-val" id="stickerSizeVal">140</span>
+      </div>
+      <div class="btn-row">
+        <button class="btn ghost small" id="stickerRandom" style="width:auto">Случайный узор</button>
+        <button class="btn small" id="stickerDownload">Скачать PNG</button>
+      </div>
       <div class="premium-line" id="premiumNotice" style="display:none">Premium или 1 ⭐</div>
-      <button class="btn" id="stickerDownload" style="margin-top:14px">Скачать PNG</button>
     </div>
   </section>
 
@@ -352,6 +459,18 @@ let TG = null;
 try{
   if(window.Telegram && Telegram.WebApp){ TG = Telegram.WebApp; TG.ready(); TG.expand(); }
 }catch(e){}
+
+/* ============ Вибрация ============ */
+function buzz(ms){ try{ if(navigator.vibrate) navigator.vibrate(ms||8); }catch(e){} }
+document.addEventListener('click', e=>{
+  if(e.target.closest('.btn,.chip,.tab,.swatch,.tpl,.home-btn')) buzz(8);
+});
+
+/* ============ Загрузочный экран ============ */
+window.addEventListener('load', ()=>{
+  setTimeout(()=>{ const s = document.getElementById('splash'); s.classList.add('hide'); }, 520);
+});
+setTimeout(()=>{ const s = document.getElementById('splash'); if(s && !s.classList.contains('hide')) s.classList.add('hide'); }, 3000);
 
 /* ============ Пылинки ============ */
 (function dust(){
@@ -474,29 +593,61 @@ function setBusy(on){
   b.disabled = on;
   b.innerHTML = on ? 'Поиск…' : 'Поиск';
 }
+/** Палитры для открытки */
+const NICKS_PALETTES = [
+  { bg:['#0f0c1f','#243b67'],        font:'#fff' },
+  { bg:['#111013','#3a3a42'],        font:'#fff' },
+  { bg:['#1a1014','#54203c'],        font:'#fff' },
+  { bg:['#0a1620','#0f4c5c'],        font:'#fff' },
+  { bg:['#101418','#27333f'],        font:'#fff' },
+  { bg:['#141018','#4a2a5a'],        font:'#f2e6ff' }
+];
+let curPal = null;
+function buildPalettes(){
+  const box = document.getElementById('pcPalettes');
+  box.innerHTML = '';
+  NICKS_PALETTES.forEach((p,idx)=>{
+    const sw = document.createElement('div');
+    sw.className = 'swatch'+(idx===0?' active':'');
+    sw.style.background = 'linear-gradient(135deg,'+p.bg[0]+','+p.bg[1]+')';
+    sw.addEventListener('click', ()=>{
+      buzz(6);
+      box.querySelectorAll('.swatch').forEach(x=>x.classList.remove('active'));
+      sw.classList.add('active');
+      applyPalette(p);
+    });
+    box.appendChild(sw);
+  });
+}
+function applyPalette(p){
+  const card = document.getElementById('postcard');
+  card.style.background = 'linear-gradient(135deg,'+p.bg[0]+','+p.bg[1]+')';
+  card.style.color = p.font;
+}
 function renderNick(n, st){
-  document.getElementById('nickOut').textContent = '@' + n;
-  const el = document.getElementById('nickStatus');
-  el.classList.remove('free','unknown','taken');
-  if(st==='free'){ el.textContent = 'Свободен'; el.classList.add('free'); }
-  else if(st==='taken'){ el.textContent = 'Занят'; el.classList.add('taken'); }
-  else { el.textContent = 'Не проверен (нет API)'; el.classList.add('unknown'); }
-  document.getElementById('nickCopy').onclick = ()=> copyText(n, 'Скопировано');
+  document.getElementById('pcNick').textContent = '@' + n;
+  const badge = document.getElementById('pcBadge');
+  badge.classList.remove('free','taken','unknown');
+  if(st==='free'){ badge.textContent='Свободен'; badge.classList.add('free'); }
+  else if(st==='taken'){ badge.textContent='Занят'; badge.classList.add('taken'); }
+  else { badge.textContent='Не проверен'; badge.classList.add('unknown'); }
+  document.getElementById('nickCopy').onclick = ()=>{ buzz(8); copyText(n, 'Скопировано'); };
 }
 async function search(){
   setBusy(true);
   const cat = (document.querySelector('#nickStyleChips .chip.active')||{dataset:{v:'normal'}}).dataset.v;
-  const box = document.getElementById('nickResult');
-  box.classList.add('show');
-  document.getElementById('nickStatus').textContent = 'Поиск…';
-  document.getElementById('nickOut').textContent = '@…';
+  const wrap = document.getElementById('postcardWrap');
+  wrap.classList.add('show');
+  buildPalettes();
+  document.getElementById('pcBadge').textContent = 'Поиск…';
+  document.getElementById('pcNick').textContent = '…';
   let last = null;
   const attempts = cat==='max' ? 12 : cat==='medium' ? 8 : 6;
   for(let i=0;i<attempts;i++){
     const n = genNick(cat);
     last = n;
     const st = await checkNick(n);
-    if(st==='free'){ renderNick(n,'free'); setBusy(false); return; }
+    if(st==='free'){ renderNick(n,'free'); setBusy(false); buzz(14); return; }
     if(st==='unknown'){ renderNick(n,'unknown'); setBusy(false); return; }
     await new Promise(r=>setTimeout(r,150));
   }
@@ -511,6 +662,7 @@ document.querySelectorAll('#nickStyleChips .chip').forEach(c=>{
     c.classList.add('active');
   });
 });
+applyPalette(NICKS_PALETTES[0]);
 
 /* ============ Стикеры ============ */
 const STICKER_BG = [
@@ -526,6 +678,7 @@ const STICKER_BG = [
 let curTpl = 0;
 const cv = document.getElementById('stickerCanvas');
 const ctx = cv.getContext('2d');
+let stickerSize = 140;
 function drawSticker(){
   const t = STICKER_BG[curTpl];
   const text = (document.getElementById('stickerText').value.trim() || 'ник');
@@ -540,7 +693,7 @@ function drawSticker(){
   if(t.kind==='lines'){ ctx.strokeStyle='rgba(255,255,255,.35)'; ctx.lineWidth=5; for(let i=-S;i<S*2;i+=34){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i+S,S);ctx.stroke();} }
   if(t.kind==='blur'){ const g=ctx.createRadialGradient(S/2,S/2,50,S/2,S/2,S); g.addColorStop(0,'rgba(70,70,80,.9)'); g.addColorStop(.7,'rgba(20,20,24,.5)'); g.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=g; ctx.fillRect(0,0,S,S); }
   ctx.textAlign='center'; ctx.textBaseline='middle';
-  let fs = 140;
+  let fs = stickerSize;
   ctx.font = '700 '+fs+'px -apple-system,"Segoe UI",sans-serif';
   while(ctx.measureText(text).width>S*.8 && fs>26){ fs-=8; ctx.font='700 '+fs+'px -apple-system,"Segoe UI",sans-serif'; }
   const cx=S/2, cy=S/2;
@@ -549,6 +702,28 @@ function drawSticker(){
   else { ctx.strokeStyle='#000'; ctx.lineWidth=Math.max(8,fs*.12); ctx.strokeText(text,cx,cy); ctx.fillStyle='#fff'; ctx.fillText(text,cx,cy); }
 }
 document.getElementById('stickerText').addEventListener('input', drawSticker);
+/* Слайдер размера */
+const sizeSlider = document.getElementById('stickerSize');
+const sizeVal = document.getElementById('stickerSizeVal');
+sizeSlider.addEventListener('input', ()=>{
+  stickerSize = +sizeSlider.value;
+  sizeVal.textContent = stickerSize;
+  drawSticker();
+});
+sizeSlider.addEventListener('change', ()=> buzz(4));
+/* Случайный узор: выпадение случайного шаблона */
+document.getElementById('stickerRandom').addEventListener('click', ()=>{
+  buzz(8);
+  let idx;
+  do { idx = Math.floor(Math.random()*STICKER_BG.length); } while(idx===curTpl && STICKER_BG.length>1);
+  curTpl = idx;
+  const grid = document.getElementById('tplGrid');
+  grid.querySelectorAll('.tpl').forEach(x=>x.classList.remove('active'));
+  const tpls = grid.children;
+  if(tpls[idx]) tpls[idx].classList.add('active');
+  updatePremiumUI(); drawSticker();
+  toast('Узор: ' + STICKER_BG[idx].name);
+});
 function isPremiumUser(){
   try{
     const u = TG && TG.initDataUnsafe && TG.initDataUnsafe.user;
