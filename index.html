@@ -597,6 +597,7 @@ function buildMiniGrid(){
   const list=curBW?BW_TPL.slice(0,9):COLOR_TPL.slice(0,9);
   list.forEach((t,i)=>{
     const c=document.createElement('div'); c.className='tpl-card';
+    c.innerHTML = '<div class="t-check">✓</div><div class="t-info"><div class="t-name">'+t.n+'</div><div class="t-id">'+t.id+'</div></div>';
     const cv=document.createElement('canvas'); cv.width=128; cv.height=128;
     const g=cv.getContext('2d');
     if(!t.bw){ const gr=g.createLinearGradient(0,0,128,128); gr.addColorStop(0,'#241f35'); gr.addColorStop(1,'#0d0d12'); g.fillStyle=gr; } else { g.fillStyle='#101014'; }
@@ -609,8 +610,7 @@ function buildMiniGrid(){
     g.shadowColor='rgba(0,0,0,.9)'; g.shadowBlur=4;
     g.fillText('ХАОС',64,116); g.shadowBlur=0;
     g.strokeStyle='rgba(255,255,255,.5)'; g.lineWidth=1.5; g.strokeRect(8,8,112,64);
-    c.appendChild(cv);
-    c.innerHTML += '<div class="t-check">✓</div><div class="t-info"><div class="t-name">'+t.n+'</div><div class="t-id">'+t.id+'</div></div>';
+    c.insertBefore(cv, c.firstChild);
     c.addEventListener('click',()=>{
       buzz(6);
       pickedEmoji={value:t.e};
@@ -667,15 +667,20 @@ function buildStudioGrid(){
   list.forEach(t=>{
     const globalIdx=ALL_TPL.findIndex(x=>x.id===t.id);
     const c=document.createElement('div'); c.className='tpl-card'+(mySet.has(t.id)?' active':'');
+    c.innerHTML = '<div class="t-check">✓</div><div class="t-info"><div class="t-name">'+t.n+'</div><div class="t-id">'+t.id+'</div></div>';
     const cv=document.createElement('canvas'); cv.width=128; cv.height=128;
     const g=cv.getContext('2d');
-    if(!t.bw){ const gr=g.createLinearGradient(0,0,128,128); gr.addColorStop(0,'#241f35'); gr.addColorStop(1,'#0d0d12'); g.fillStyle=gr; } else { g.fillStyle='#0d0d12'; }
+    if(!t.bw){ const gr=g.createLinearGradient(0,0,128,128); gr.addColorStop(0,'#241f35'); gr.addColorStop(1,'#0d0d12'); g.fillStyle=gr; } else { g.fillStyle='#101014'; }
     g.fillRect(0,0,128,128);
-    g.font='52px serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(t.e,64,64);
-    g.font='800 9px "Inter",sans-serif'; g.fillStyle='#fff'; g.fillText('ХАОС',64,112);
-    g.strokeStyle='rgba(255,255,255,.35)'; g.lineWidth=1.5; g.strokeRect(10,10,108,64);
-    c.appendChild(cv);
-    c.innerHTML += '<div class="t-check">✓</div><div class="t-info"><div class="t-name">'+t.n+'</div><div class="t-id">'+t.id+'</div></div>';
+    g.font='44px serif'; g.textAlign='center'; g.textBaseline='middle';
+    g.shadowColor='rgba(255,255,255,.25)'; g.shadowBlur=6;
+    g.fillText(t.e,64,58);
+    g.shadowBlur=0;
+    g.font='800 10px "Inter",sans-serif'; g.fillStyle='#fff';
+    g.shadowColor='rgba(0,0,0,.9)'; g.shadowBlur=4;
+    g.fillText('ХАОС',64,116); g.shadowBlur=0;
+    g.strokeStyle='rgba(255,255,255,.5)'; g.lineWidth=1.5; g.strokeRect(8,8,112,64);
+    c.insertBefore(cv, c.firstChild);
     c.addEventListener('click',()=>{
       buzz(6);
       if(mySet.has(t.id)){ mySet.delete(t.id); c.classList.remove('active'); }
