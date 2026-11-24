@@ -5,189 +5,336 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>LincolnGenerator</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#000; --surface:#0c0c0e; --surface2:#141417; --line:#232327;
-  --text:#f4f4f5; --muted:#76767f;
-  --radius:16px;
+  --bg:#000; --surface:rgba(12,12,14,.62); --line:rgba(255,255,255,.1);
+  --text:#f4f4f5; --muted:#8a8a93; --accent:#ffffff;
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
 body{
   background:var(--bg); color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-  min-height:100vh; padding-bottom:96px;
+  font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  min-height:100vh; padding-bottom:90px; overflow-x:hidden;
 }
+/* летающие пылинки */
+#dust{position:fixed;inset:0;z-index:0;pointer-events:none}
+/* 3D-декор */
+.deco{position:fixed;z-index:0;pointer-events:none;opacity:.5}
+.deco-cube{
+  width:52px;height:52px;top:16%;right:6%;
+  transform-style:preserve-3d;animation:cubeSpin 14s linear infinite;
+}
+.deco-cube div{
+  position:absolute;inset:0;border:1px solid rgba(255,255,255,.28);
+  background:rgba(255,255,255,.03);backdrop-filter:blur(1px);
+}
+.deco-cube div:nth-child(1){transform:translateZ(26px)}
+.deco-cube div:nth-child(2){transform:rotateY(90deg) translateZ(26px)}
+.deco-cube div:nth-child(3){transform:rotateY(180deg) translateZ(26px)}
+.deco-cube div:nth-child(4){transform:rotateY(-90deg) translateZ(26px)}
+.deco-cube div:nth-child(5){transform:rotateX(90deg) translateZ(26px)}
+.deco-cube div:nth-child(6){transform:rotateX(-90deg) translateZ(26px)}
+@keyframes cubeSpin{from{transform:rotateX(0) rotateY(0)}to{transform:rotateX(360deg) rotateY(360deg)}}
+.deco-sphere{
+  width:74px;height:74px;bottom:8%;left:4%;border-radius:50%;
+  background:radial-gradient(circle at 32% 30%, rgba(255,255,255,.34), rgba(255,255,255,.05) 55%, transparent 70%);
+  border:1px solid rgba(255,255,255,.14);
+  animation:drift 9s ease-in-out infinite alternate;
+}
+.deco-torus{
+  width:64px;height:64px;top:42%;right:-18px;
+  border:10px solid rgba(255,255,255,.1);border-radius:50%;
+  animation:torusSpin 11s linear infinite;
+}
+@keyframes torusSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes drift{from{transform:translateY(0)}to{transform:translateY(-14px)}}
 /* header */
 .app-header{
-  position:sticky;top:0;z-index:10;
-  background:rgba(0,0,0,.88); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
-  padding:18px 16px 12px; border-bottom:1px solid var(--line);
+  position:sticky;top:0;z-index:20;
+  background:rgba(0,0,0,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  padding:16px 16px 12px;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
 }
 .app-header h1{
-  margin:0;font-size:21px;font-weight:800;letter-spacing:.2px;color:#fff;
-  text-shadow:0 1px 0 rgba(255,255,255,.08), 0 2px 3px rgba(0,0,0,.9);
+  margin:0;font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;letter-spacing:.2px;color:#fff;
 }
+.home-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--surface);border:1px solid var(--line);color:var(--text);
+  border-radius:50px;padding:9px 14px;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;
+  transition:.2s;backdrop-filter:blur(8px);
+}
+.home-btn:hover{border-color:rgba(255,255,255,.32)}
+.home-btn svg{flex:0 0 auto}
 nav.tabs{
-  display:flex;gap:7px;position:sticky;top:58px;z-index:9;
-  background:rgba(0,0,0,.88); backdrop-filter:blur(12px);
-  padding:10px 12px;overflow-x:auto;border-bottom:1px solid var(--line);
+  display:flex;gap:8px;position:sticky;top:58px;z-index:19;
+  background:rgba(0,0,0,.82);backdrop-filter:blur(14px);
+  padding:10px 14px;overflow-x:auto;border-bottom:1px solid var(--line);
 }
 nav.tabs::-webkit-scrollbar{display:none}
 .tab{
   flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;
   border:1px solid var(--line);cursor:pointer;font-family:inherit;
   font-weight:600;font-size:13px;color:var(--muted);background:var(--surface);
-  border-radius:50px;padding:9px 15px;transition:.2s;
+  border-radius:50px;padding:9px 16px;transition:.2s;backdrop-filter:blur(8px);
 }
-.tab.active{background:var(--text);color:#000;border-color:var(--text);box-shadow:0 4px 14px rgba(0,0,0,.8)}
-/* 3D icons */
+.tab.active{background:#fff;color:#000;border-color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.85)}
 .icon3d{
-  width:18px;height:18px;border-radius:50%;flex:0 0 auto;
-  background:radial-gradient(circle at 32% 28%, #4a4a52, #0a0a0c 70%);
-  box-shadow:inset 0 -2px 3px rgba(0,0,0,.9), inset 0 1px 2px rgba(255,255,255,.28);
-  display:inline-block;position:relative;
+  width:18px;height:18px;border-radius:50%;flex:0 0 auto;position:relative;display:inline-block;
+  background:radial-gradient(circle at 32% 28%, #4c4c54, #0b0b0d 72%);
+  box-shadow:inset 0 -2px 3px rgba(0,0,0,.95), inset 0 1px 2px rgba(255,255,255,.3);
 }
-.icon3d::after{
-  content:"";position:absolute;left:26%;top:16%;width:30%;height:22%;
-  background:rgba(255,255,255,.35);border-radius:50%;filter:blur(1px);
-}
-.tab.active .icon3d{
-  background:radial-gradient(circle at 32% 28%, #cfcfd4, #66666e 70%);
-}
-main{max-width:480px;margin:0 auto;padding:16px 12px}
+.icon3d::after{content:"";position:absolute;left:26%;top:15%;width:32%;height:24%;background:rgba(255,255,255,.4);border-radius:50%;filter:blur(1px)}
+.tab.active .icon3d{background:radial-gradient(circle at 32% 28%, #d4d4d8, #6a6a72 72%)}
+main{max-width:500px;margin:0 auto;padding:18px 14px;position:relative;z-index:1}
 section.page{display:none}
-section.page.active{display:block;animation:pageIn .35s ease}
-@keyframes pageIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-.card{
-  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
-  padding:18px;margin-bottom:12px;
+section.page.active{display:block;animation:pageIn .4s cubic-bezier(.2,.8,.3,1)}
+@keyframes pageIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+/* панель с анимированной градиентной рамкой вместо карточек */
+.panel{
+  position:relative;border-radius:28px;padding:24px 20px;margin-bottom:16px;
+  background:var(--surface);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.07);
+  box-shadow:0 18px 50px rgba(0,0,0,.65);
 }
-.card > h2{display:none}
-label{display:block;font-size:12px;color:var(--muted);margin:12px 0 7px;font-weight:600;letter-spacing:.3px;text-transform:uppercase}
+.panel::before{
+  content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;
+  background:conic-gradient(from 0deg, transparent 260deg, rgba(255,255,255,.55) 300deg, transparent 340deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  animation:edgeMove 5s linear infinite;pointer-events:none;
+}
+@keyframes edgeMove{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+label{display:block;font-size:11.5px;color:var(--muted);margin:0 0 8px;font-weight:600;letter-spacing:.6px;text-transform:uppercase}
 input[type=text]{
-  width:100%;background:var(--surface2);border:1px solid var(--line);color:var(--text);
-  border-radius:12px;padding:13px 15px;font-size:15px;font-family:inherit;outline:none;transition:.2s;
+  width:100%;background:rgba(0,0,0,.5);border:1px solid var(--line);color:var(--text);
+  border-radius:16px;padding:14px 16px;font-size:15px;font-family:inherit;outline:none;transition:.2s;
 }
-input[type=text]:focus{border-color:#55555e}
+input[type=text]:focus{border-color:rgba(255,255,255,.4)}
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  background:var(--text);color:#000;border:none;border-radius:50px;
-  padding:14px 20px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;width:100%;transition:.15s;
-  box-shadow:0 6px 16px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.5);
+  background:#fff;color:#000;border:none;border-radius:50px;
+  padding:14px 22px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;width:100%;transition:.15s;
+  box-shadow:0 8px 26px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.6);
 }
 .btn:active{transform:scale(.97)}
-.btn.ghost{background:var(--surface2);color:var(--text);border:1px solid var(--line);box-shadow:none}
-.btn.small{width:auto;padding:9px 14px;font-size:13px}
+.btn.ghost{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--line);box-shadow:none}
+.btn.small{width:auto;padding:10px 16px;font-size:13px;font-weight:600}
 .btn:disabled{opacity:.45;cursor:default}
-.row{display:flex;gap:8px}
-.row .btn{flex:1}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{
-  background:var(--surface2);border:1px solid var(--line);color:var(--muted);border-radius:50px;
-  padding:9px 14px;font-size:13px;cursor:pointer;font-family:inherit;transition:.15s;
+  background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--muted);border-radius:50px;
+  padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit;transition:.18s;font-weight:500;
 }
-.chip.active{background:var(--text);color:#000;border-color:var(--text);font-weight:700}
-/* nick result */
-.nick-result{margin-top:18px;text-align:center;padding:18px 10px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface2)}
-.nick-status{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
-.nick-status.free{color:#4ade80}
-.nick-status.taken{color:#f87171}
-.nick-status.unknown{color:#a3a3ad}
-.nick-name{
-  font-size:27px;font-weight:800;color:#fff;word-break:break-word;line-height:1.25;
-  text-shadow:0 1px 0 rgba(255,255,255,.1), 0 3px 6px rgba(0,0,0,.9);
+.chip.active{background:#fff;color:#000;border-color:#fff;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.8)}
+/* результат юзернейма — необычная «орбита» */
+.orbit-result{
+  margin-top:18px;display:none;text-align:center;position:relative;padding:26px 8px;
 }
-.nick-actions{display:flex;gap:8px;margin-top:16px;justify-content:center;flex-wrap:wrap}
-.nick-actions .btn{width:auto}
-.spinner{
-  width:16px;height:16px;border:2px solid #000;border-top-color:transparent;
-  border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:-3px;
+.orbit-result.show{display:block;animation:orbitIn .55s cubic-bezier(.2,.9,.3,1.25)}
+@keyframes orbitIn{from{opacity:0;transform:scale(.72);filter:blur(10px)}to{opacity:1;transform:scale(1);filter:blur(0)}}
+.orb{
+  position:relative;width:min(240px,66vw);aspect-ratio:1;margin:0 auto;
+  display:flex;align-items:center;justify-content:center;
 }
-@keyframes spin{to{transform:rotate(360deg)}}
-/* sticker */
-.tpl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.orb-core{
+  width:min(200px,56vw);aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle at 34% 30%, #2a2a30, #0a0a0c 75%);
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;
+  border:1px solid rgba(255,255,255,.16);
+  box-shadow:0 20px 60px rgba(0,0,0,.9), inset 0 -18px 40px rgba(0,0,0,.8), inset 0 8px 20px rgba(255,255,255,.05);
+  position:relative;z-index:2;padding:18px;
+}
+.orb-core .nk{
+  font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;color:#fff;
+  word-break:break-word;line-height:1.25;
+}
+.orb-core .st{
+  font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
+}
+.orb-core .st.free{color:#4ade80}
+.orb-core .st.unknown{color:#a3a3ad}
+.orb-ring{
+  position:absolute;inset:0;border-radius:50%;
+  border:1px dashed rgba(255,255,255,.28);
+  animation:ringTurn 16s linear infinite;
+}
+.orb-ring::before{
+  content:"";position:absolute;top:-4px;left:50%;width:8px;height:8px;border-radius:50%;
+  background:#fff;box-shadow:0 0 14px rgba(255,255,255,.9);
+}
+@keyframes ringTurn{to{transform:rotate(360deg)}}
+.orbit-actions{display:flex;justify-content:center;gap:10px;margin-top:18px}
+/* стикеры */
+.tpl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:14px}
 .tpl{
-  position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;cursor:pointer;
-  border:2px solid var(--line);transition:.2s;
-  display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:11px;
-  background:var(--surface2);
+  position:relative;border-radius:16px;overflow:hidden;aspect-ratio:1;cursor:pointer;
+  border:1px solid var(--line);transition:.2s;
+  display:flex;align-items:center;justify-content:center;font-weight:600;color:#fff;font-size:10.5px;
+  background:rgba(0,0,0,.45);letter-spacing:.2px;
 }
-.tpl.active{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.25)}
-.tpl .lock{position:absolute;top:5px;right:5px;background:rgba(0,0,0,.7);color:#fff;font-size:11px;border-radius:8px;padding:2px 6px;font-weight:700;border:1px solid var(--line)}
+.tpl.active{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.22)}
+.tpl .lock{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.75);color:#fff;font-size:11px;border-radius:9px;padding:2px 7px;font-weight:700;border:1px solid var(--line)}
 .sticker-stage{
-  position:relative;margin:16px auto;width:min(250px,66vw);aspect-ratio:1;border-radius:20px;overflow:hidden;
-  box-shadow:0 14px 40px rgba(0,0,0,.85);border:1px solid var(--line);
+  position:relative;margin:18px auto;width:min(248px,66vw);aspect-ratio:1;border-radius:22px;overflow:hidden;
+  box-shadow:0 16px 44px rgba(0,0,0,.9);border:1px solid var(--line);
 }
 .sticker-stage canvas{width:100%;height:100%;display:block}
-.premium-line{color:var(--muted);font-size:12px;margin-top:10px}
-/* fonts */
-.font-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
-.font-item{
-  background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;
-  cursor:pointer;transition:.15s;
+.premium-line{color:var(--muted);font-size:12px;margin-top:10px;text-align:center}
+/* анонимность */
+.anon p{color:var(--muted);font-size:13.5px;line-height:1.6;margin:0 0 10px}
+.anon h3{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;margin:20px 0 8px;color:#fff}
+.anon ul{margin:0;padding:0;list-style:none}
+.anon li{
+  color:var(--muted);font-size:13px;line-height:1.55;padding:9px 0 9px 24px;position:relative;border-bottom:1px solid rgba(255,255,255,.05);
 }
-.font-item:active{background:#1a1a1f}
-.font-item .fname{font-size:10.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
-.font-item .fprev{font-size:17px;margin-top:5px;word-break:break-word;line-height:1.3;color:#fff}
-.footer{color:#4a4a52;font-size:11px;text-align:center;padding:16px 12px 6px}
-modal{display:none}
+.anon li::before{content:"→";position:absolute;left:0;color:#fff;font-weight:700}
+/* профиль */
+.profile-head{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.avatar{
+  width:56px;height:56px;border-radius:50%;flex:0 0 auto;
+  background:radial-gradient(circle at 32% 28%, #3a3a42, #0c0c0e 72%);
+  display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;font-family:'Space Grotesk',sans-serif;color:#fff;
+  border:1px solid var(--line);box-shadow:inset 0 -4px 10px rgba(0,0,0,.8), inset 0 2px 6px rgba(255,255,255,.08);
+}
+.profile-head .who{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;color:#fff}
+.profile-head .tag{font-size:12px;color:var(--muted);margin-top:2px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.stat{
+  background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:20px;padding:16px;
+}
+.stat .k{font-size:11px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;font-weight:600}
+.stat .v{font-family:'Space Grotesk',sans-serif;font-size:21px;font-weight:700;color:#fff;margin-top:6px}
+.stat .d{font-size:11.5px;color:var(--muted);margin-top:3px}
+.list-row{display:flex;justify-content:space-between;gap:10px;padding:12px 2px;border-bottom:1px solid rgba(255,255,255,.06);font-size:13.5px}
+.list-row .lab{color:var(--muted)}
+.list-row .val{color:#fff;font-weight:600;text-align:right}
+.note{
+  margin-top:14px;font-size:12px;color:var(--muted);line-height:1.6;
+  background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.16);border-radius:16px;padding:13px 15px;
+}
+.footer{color:#45454d;font-size:11px;text-align:center;padding:18px 12px 6px;position:relative;z-index:1}
 .toast{
-  position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#1a1a1f;color:#fff;
-  padding:10px 18px;border-radius:50px;font-size:13px;font-weight:600;z-index:99;
+  position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#141418;color:#fff;
+  padding:11px 20px;border-radius:50px;font-size:13px;font-weight:600;z-index:99;
   border:1px solid var(--line);transition:opacity .3s;opacity:0;pointer-events:none;white-space:nowrap;
+  box-shadow:0 10px 30px rgba(0,0,0,.8);
 }
 </style>
 </head>
 <body>
 
-<header class="app-header"><h1>LincolnGenerator</h1></header>
+<canvas id="dust"></canvas>
+<div class="deco deco-cube"><div></div><div></div><div></div><div></div><div></div><div></div></div>
+<div class="deco deco-sphere"></div>
+<div class="deco deco-torus"></div>
+
+<header class="app-header">
+  <h1>LincolnGenerator</h1>
+  <button class="home-btn" id="homeBtn">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+    Личный профиль
+  </button>
+</header>
 
 <nav class="tabs">
   <button class="tab active" data-page="nicks"><span class="icon3d"></span>Юзернем</button>
   <button class="tab" data-page="stickers"><span class="icon3d"></span>Создать стикер</button>
-  <button class="tab" data-page="fonts"><span class="icon3d"></span>Шрифты</button>
+  <button class="tab" data-page="anon"><span class="icon3d"></span>Анонимность</button>
 </nav>
 
 <main>
+  <!-- ЮЗЕРНЕМ -->
   <section class="page active" id="page-nicks">
-    <div class="card">
-      <input type="text" id="nickSeed" placeholder="Ключевое слово" style="margin-top:0">
-      <label>Стиль</label>
+    <div class="panel">
+      <label>Ключевые слова вашего username</label>
+      <input type="text" id="nickSeed" placeholder="например: night fox">
+      <label style="margin-top:18px">Категория</label>
       <div class="chips" id="nickStyleChips">
-        <span class="chip active" data-v="short">Короткий</span>
-        <span class="chip" data-v="stylish">Стильный</span>
-        <span class="chip" data-v="rare">Редкий</span>
+        <span class="chip active" data-v="normal">Обычный</span>
+        <span class="chip" data-v="medium">Средний</span>
+        <span class="chip" data-v="max">Максимальный</span>
       </div>
-      <button class="btn" id="nickGenBtn" style="margin-top:16px">Сгенерировать</button>
-      <div class="nick-result" id="nickResult" style="display:none">
-        <div class="nick-status" id="nickStatus">Свободен</div>
-        <div class="nick-name" id="nickOut">@never</div>
-        <div class="nick-actions">
+      <button class="btn" id="nickGenBtn" style="margin-top:20px">Поиск</button>
+      <div class="orbit-result" id="nickResult">
+        <div class="orb">
+          <div class="orb-ring"></div>
+          <div class="orb-core">
+            <div class="nk" id="nickOut">@…</div>
+            <div class="st unknown" id="nickStatus">Поиск…</div>
+          </div>
+        </div>
+        <div class="orbit-actions">
           <button class="btn small" id="nickCopy">Копировать</button>
-          <button class="btn small ghost" id="nickAgain">Ещё</button>
         </div>
       </div>
     </div>
   </section>
 
+  <!-- СТИКЕР -->
   <section class="page" id="page-stickers">
-    <div class="card">
-      <input type="text" id="stickerText" placeholder="Текст" maxlength="14" style="margin-top:0">
-      <label>Шаблон</label>
+    <div class="panel">
+      <label>Текст</label>
+      <input type="text" id="stickerText" placeholder="ваш текст" maxlength="14">
+      <label style="margin-top:18px">Шаблон</label>
       <div class="tpl-grid" id="tplGrid"></div>
       <div class="sticker-stage"><canvas id="stickerCanvas" width="512" height="512"></canvas></div>
       <div class="premium-line" id="premiumNotice" style="display:none">Premium или 1 ⭐</div>
-      <div class="row" style="margin-top:12px">
-        <button class="btn" id="stickerDownload">Скачать PNG</button>
-      </div>
+      <button class="btn" id="stickerDownload" style="margin-top:14px">Скачать PNG</button>
     </div>
   </section>
 
-  <section class="page" id="page-fonts">
-    <div class="card">
-      <input type="text" id="fontInput" placeholder="Текст" style="margin-top:0">
-      <div class="font-list" id="fontList"></div>
+  <!-- АНОНИМНОСТЬ -->
+  <section class="page" id="page-anon">
+    <div class="panel anon">
+      <h3>Анонимность в Telegram</h3>
+      <p>Username виден всем: по нему вас находят в поиске. Если хотите оставаться скрытым — лучше не привязывать к аккаунту личные данные.</p>
+      <ul>
+        <li><b style="color:#fff">Не ставьте свой настоящий ник</b> (имя, фамилия, год рождения) в username</li>
+        <li><b style="color:#fff">Номер телефона</b> виден только тем, кто вас добавил по номеру — включите «Никто» в Настройки → Конфиденциальность</li>
+        <li><b style="color:#fff">Активные сессии:</b> Настройки → Устройства — проверяйте и завершайте неизвестные</li>
+        <li><b style="color:#fff">Двухфакторная защита:</b> включите пароль и облачный пароль (Настройки → Конфиденциальность)</li>
+        <li><b style="color:#fff">Скройте свои личные данные</b> в профиле: убрать номер, e-mail, дату рождения, фотографии лиц, геометки</li>
+      </ul>
+      <h3>Если данные утекли</h3>
+      <ul>
+        <li><b style="color:#fff">Смените пароль</b> от Telegram и подключённых сервисов — везде разные пароли</li>
+        <li><b style="color:#fff">Отзовите сессии:</b> Настройки → Устройства → «Завершить все сеансы»</li>
+        <li><b style="color:#fff">Включите/смените облачный пароль</b> — без него не смогут войти даже те, кто знает код</li>
+        <li><b style="color:#fff">Если утёк номер</b> — включите двухфакторку и не переходите по ссылкам «проверка аккаунта» (это фишинг)</li>
+        <li><b style="color:#fff">Если утекли платёжные данные</b> — заблокируйте карту в банке</li>
+        <li><b style="color:#fff">Проверьте почту</b> на утечки (например, haveibeenpwned.com) и смените пароли</li>
+        <li><b style="color:#fff">Удалите старые аккаунты</b>, где вы оставляли данные (форумы, магазины)</li>
+      </ul>
+      <p style="margin-top:14px;color:#6f6f78;font-size:12px">Информация носит общий справочный характер. При реальной угрозе — обратитесь в поддержку Telegram (Settings → Help) и при необходимости в полицию.</p>
+    </div>
+  </section>
+
+  <!-- ЛИЧНЫЙ ПРОФИЛЬ -->
+  <section class="page" id="page-profile">
+    <div class="panel">
+      <div class="profile-head">
+        <div class="avatar" id="pAvatar">👤</div>
+        <div>
+          <div class="who" id="pName">Вы</div>
+          <div class="tag" id="pTag">Telegram подключен</div>
+        </div>
+      </div>
+      <div class="stat-grid">
+        <div class="stat"><div class="k">Баланс Stars</div><div class="v" id="pStars">0 ⭐</div><div class="d">доступно для покупок</div></div>
+        <div class="stat"><div class="k">Стикеры куплены</div><div class="v" id="pStickers">0</div><div class="d">всего покупок</div></div>
+        <div class="stat"><div class="k">Пополнения</div><div class="v" id="pTopups">0 ⭐</div><div class="d">за всё время</div></div>
+        <div class="stat"><div class="k">Траты</div><div class="v" id="pSpends">0 ⭐</div><div class="d">на стикеры</div></div>
+      </div>
+      <div class="list-row"><span class="lab">Статус переводов</span><span class="val" id="pTransfers">Нет активных</span></div>
+      <div class="list-row"><span class="lab">Привязанный аккаунт</span><span class="val" id="pAccount">Telegram</span></div>
+      <div class="list-row"><span class="lab">Стикеры в вашем паке</span><span class="val" id="pPack">—</span></div>
+      <div class="note">Здесь появятся реальные данные (баланс Stars, покупки, пополнения) после подключения бота и Telegram Payments. Сейчас показана структура кабинета; привязка к Telegram выполняется автоматически при открытии через бота.</div>
     </div>
   </section>
 
@@ -202,34 +349,70 @@ modal{display:none}
 const TG_PAY_CONFIG = { invoiceUrl: "" };
 const API_BASE = location.origin + '/api/check-username';
 
-/* ============ Telegram ============ */
 let TG = null;
 try{
   if(window.Telegram && Telegram.WebApp){ TG = Telegram.WebApp; TG.ready(); TG.expand(); }
 }catch(e){}
 
-function isPremiumUser(){
-  try{
-    const u = TG && TG.initDataUnsafe && TG.initDataUnsafe.user;
-    if(u && u.is_premium) return true;
-    return localStorage.getItem('lg_premium') === '1';
-  }catch(e){ return false; }
-}
+/* ============ Пылинки ============ */
+(function dust(){
+  const c = document.getElementById('dust'), x = c.getContext('2d');
+  let W, H, ps = [];
+  function resize(){ W = c.width = innerWidth; H = c.height = innerHeight; }
+  resize(); addEventListener('resize', resize);
+  const N = Math.min(38, Math.floor(W/22));
+  for(let i=0;i<N;i++) ps.push({
+    x:Math.random()*W, y:Math.random()*H,
+    r:Math.random()*1.7+.5,
+    vy:-(Math.random()*.18+.04),
+    vx:(Math.random()-.5)*.12,
+    a:Math.random()*.45+.15
+  });
+  (function tick(){
+    x.clearRect(0,0,W,H);
+    for(const p of ps){
+      p.x += p.vx; p.y += p.vy;
+      if(p.y < -6){ p.y = H+6; p.x = Math.random()*W; }
+      if(p.x < -6) p.x = W+6; if(p.x > W+6) p.x = -6;
+      x.beginPath(); x.arc(p.x,p.y,p.r,0,Math.PI*2);
+      x.fillStyle = 'rgba(255,255,255,'+p.a+')'; x.fill();
+    }
+    requestAnimationFrame(tick);
+  })();
+})();
 
-/* ============ Toast / tabs ============ */
+/* ============ Toast / tabs / profile ============ */
 function toast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg; t.style.opacity = '1';
-  clearTimeout(t._h); t._h = setTimeout(()=>{ t.style.opacity = '0'; }, 1500);
+  clearTimeout(t._h); t._h = setTimeout(()=>{ t.style.opacity = '0'; }, 1600);
+}
+function switchPage(id){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active', x.dataset.page===id));
+  document.querySelectorAll('section.page').forEach(s=>s.classList.toggle('active', s.id==='page-'+id));
 }
 document.querySelectorAll('.tab').forEach(t=>{
-  t.addEventListener('click', ()=>{
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-    t.classList.add('active');
-    document.querySelectorAll('section.page').forEach(s=>s.classList.remove('active'));
-    document.getElementById('page-'+t.dataset.page).classList.add('active');
-  });
+  t.addEventListener('click', ()=> switchPage(t.dataset.page));
 });
+document.getElementById('homeBtn').addEventListener('click', ()=> switchPage('profile'));
+
+/* ============ Профиль ============ */
+function lsGet(k,d){ try{ const v = localStorage.getItem(k); return v===null?d:v; }catch(e){ return d; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function refreshProfile(){
+  const u = TG && TG.initDataUnsafe && TG.initDataUnsafe.user;
+  let initials = 'В';
+  if(u){
+    initials = (u.first_name||'')[0] || 'В';
+    document.getElementById('pName').textContent = u.first_name + (u.last_name?' '+u.last_name:'');
+    document.getElementById('pTag').textContent = u.username ? '@'+u.username : 'Telegram подключен';
+  }
+  document.getElementById('pAvatar').textContent = initials.toUpperCase();
+  document.getElementById('pStars').textContent = lsGet('lg_stars','0') + ' ⭐';
+  document.getElementById('pStickers').textContent = lsGet('lg_bought','0');
+  document.getElementById('pTopups').textContent = lsGet('lg_topups','0') + ' ⭐';
+  document.getElementById('pSpends').textContent = lsGet('lg_spends','0') + ' ⭐';
+}
 function copyText(txt, ok){
   if(navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(txt).then(()=>toast(ok||'Скопировано')).catch(()=>fallbackCopy(txt));
@@ -249,76 +432,80 @@ async function checkNick(n){
     const r = await fetch(API_BASE + '?username=' + encodeURIComponent(n), { signal: AbortSignal.timeout(8000) });
     if(!r.ok) return 'unknown';
     const d = await r.json();
-    if(d.taken === true) return 'taken';
-    if(d.taken === false) return 'free';
-    return 'unknown';
+    return d.taken===true ? 'taken' : d.taken===false ? 'free' : 'unknown';
   }catch(e){ return 'unknown'; }
 }
 
-/* ============ Ники ============ */
-const NICK_STYLES = {
-  short: {
-    base:['lynx','zeph','nox','vek','orx','kyn','zed','rapt','onix','neq','vexx','kro','zylo','nvex','trex','verd','huiz','phnx','lyre','cryo'],
-    tail:['x','k','o','a','e','z','n','r'] // короткие хвосты
-  },
-  stylish: {
-    base:['velvet','neon','midnight','chrome','spectrum','velocity','cipher','modem','vertex','aurora','onyx','cosmic','echo','sable','optic'],
-    tail:['.l','_n','_mx','_x','.v','_d','_one','ish']
-  },
-  rare: {
-    base:['solstice','aphelion','quasar','umbra','synapse','cathode','halcyon','notch','ephemera','obscura','lexicon','vertigo','mirage','symmetry','zenith'],
-    tail:['#','_x','x_','_1','_7','zz','_v','_n','_k']
-  }
+/* ============ Ники: три категории ============ */
+const WORDS = {
+  short:['lux','vex','nox','zeph','onyx','krow','lyra','cryo','zaye','onyx','vexx','koda','zara','miko','lex'],
+  medium:['neon','midnight','chrome','velvet','cosmic','cipher','vertex','aurora','sable','optic','ekho','vance','praxe','solar','nova'],
+  long:['velvet','midnight','chromsphere','cosmicwave','auroraflux','velocity','cipherkey','vertexlab','onyxorbit','echoarq']
 };
+const RARE_BASE = ['nox','vex','lyx','zeph','krow','onyx','zaye','cryo','lux','vexx','koda','miko','lex','ziro','nix','emby','ark','zeta','vox','rex'];
+const RARE_TAIL = ['','','','_','x','.','-','z','n','','_x'];
+const MED_TAIL = ['_x','x_','_n','_z','_v','_7','_21','_99','1','7','x','k'];
+const NORM_TAIL = ['0','1','7','2026','2007','21','99','x','_pro','_real','777','_one','_top','13','42','w','k','q'];
+
 function rnd(a){ return a[Math.floor(Math.random()*a.length)]; }
-function genNick(){
-  const s = document.querySelector('#nickStyleChips .chip.active');
-  const style = (s && s.dataset.v) || 'short';
-  const pool = NICK_STYLES[style] || NICK_STYLES.short;
-  const seed = document.getElementById('nickSeed').value.trim().replace(/[^a-zA-Z0-9_]/g,'');
+function capitalize(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+function genNick(cat){
+  const seed = document.getElementById('nickSeed').value.trim().toLowerCase().replace(/[^a-z0-9_ ]/g,'').replace(/\s+/g,'.');
   if(seed){
-    const variations = ['','','_','_x','x','_n','z','x'];
-    let n = seed + rnd(variations);
-    if(n.length < 4) n = seed + rnd(pool.tail);
-    return n.length <= 20 ? n : seed.slice(0,16);
+    if(cat==='normal') return seed + rnd(NORM_TAIL);
+    if(cat==='medium') return seed + rnd(MED_TAIL) || seed;
+    return rnd(['','','_x','.','']) + seed.slice(0,16);
   }
-  return rnd(pool.base) + rnd(pool.tail);
+  if(cat==='normal'){
+    return rnd(WORDS.short)+rnd(WORDS.short) + rnd(NORM_TAIL);
+  }
+  if(cat==='medium'){
+    const a = capitalize(rnd(WORDS.medium)), b = rnd(WORDS.medium);
+    return (a+b + rnd(MED_TAIL)).replace(/[^a-zA-Z0-9_.]/g,'');
+  }
+  // максимальный: короткий эксклюзивный
+  let n = rnd(RARE_BASE) + rnd(RARE_BASE) + rnd(RARE_TAIL);
+  n = n.replace(/[^a-zA-Z0-9_]/g,'');
+  if(n.length<4) n = rnd(RARE_BASE) + rnd(RARE_BASE);
+  return n;
 }
-function setGenerating(on){
+function setBusy(on){
   const b = document.getElementById('nickGenBtn');
   b.disabled = on;
-  b.innerHTML = on ? '<span class="spinner"></span> Проверяю' : 'Сгенерировать';
-}
-async function showFreeNick(){
-  setGenerating(true);
-  const box = document.getElementById('nickResult');
-  box.style.display = 'block';
-  document.getElementById('nickStatus').textContent = 'Подбираю';
-  document.getElementById('nickStatus').className = 'nick-status unknown';
-  document.getElementById('nickOut').textContent = '…';
-  let last = null;
-  for(let i=0;i<10;i++){
-    const n = genNick();
-    last = n;
-    const st = await checkNick(n);
-    if(st === 'free'){ renderNick(n, 'free'); setGenerating(false); return; }
-    if(st === 'unknown'){ renderNick(n, 'unknown'); setGenerating(false); return; }
-    await new Promise(r=>setTimeout(r,140));
-  }
-  renderNick(last, 'unknown');
-  setGenerating(false);
+  b.innerHTML = on ? 'Поиск…' : 'Поиск';
 }
 function renderNick(n, st){
   document.getElementById('nickOut').textContent = '@' + n;
   const el = document.getElementById('nickStatus');
-  if(st === 'free'){ el.textContent = 'Свободен'; el.className = 'nick-status free'; }
-  else if(st === 'taken'){ el.textContent = 'Занят'; el.className = 'nick-status taken'; }
-  else { el.textContent = 'Не проверен (нет API)'; el.className = 'nick-status unknown'; }
-  document.getElementById('nickAgain').onclick = ()=> showFreeNick();
-  document.getElementById('nickCopy').onclick = ()=> copyText(n, 'Ник скопирован');
+  el.classList.remove('free','unknown','taken');
+  if(st==='free'){ el.textContent = 'Свободен'; el.classList.add('free'); }
+  else if(st==='taken'){ el.textContent = 'Занят'; el.classList.add('taken'); }
+  else { el.textContent = 'Не проверен (нет API)'; el.classList.add('unknown'); }
+  document.getElementById('nickCopy').onclick = ()=> copyText(n, 'Скопировано');
 }
-document.getElementById('nickGenBtn').addEventListener('click', showFreeNick);
-document.getElementById('nickSeed').addEventListener('keydown', e=>{ if(e.key==='Enter') showFreeNick(); });
+async function search(){
+  setBusy(true);
+  const cat = (document.querySelector('#nickStyleChips .chip.active')||{dataset:{v:'normal'}}).dataset.v;
+  const box = document.getElementById('nickResult');
+  box.classList.add('show');
+  document.getElementById('nickStatus').textContent = 'Поиск…';
+  document.getElementById('nickOut').textContent = '@…';
+  let last = null;
+  const attempts = cat==='max' ? 12 : cat==='medium' ? 8 : 6;
+  for(let i=0;i<attempts;i++){
+    const n = genNick(cat);
+    last = n;
+    const st = await checkNick(n);
+    if(st==='free'){ renderNick(n,'free'); setBusy(false); return; }
+    if(st==='unknown'){ renderNick(n,'unknown'); setBusy(false); return; }
+    await new Promise(r=>setTimeout(r,150));
+  }
+  renderNick(last, 'unknown');
+  setBusy(false);
+}
+document.getElementById('nickGenBtn').addEventListener('click', search);
+document.getElementById('nickSeed').addEventListener('keydown', e=>{ if(e.key==='Enter') search(); });
 document.querySelectorAll('#nickStyleChips .chip').forEach(c=>{
   c.addEventListener('click', ()=>{
     document.querySelectorAll('#nickStyleChips .chip').forEach(x=>x.classList.remove('active'));
@@ -328,94 +515,58 @@ document.querySelectorAll('#nickStyleChips .chip').forEach(c=>{
 
 /* ============ Стикеры ============ */
 const STICKER_BG = [
-  { id:'pure',    name:'Чёрный',  premium:false, kind:'pure'  },
-  { id:'frame',   name:'Рамка',   premium:false, kind:'frame' },
-  { id:'grid',    name:'Сетка',   premium:false, kind:'grid'  },
-  { id:'dots',    name:'Точки',   premium:false, kind:'dots'  },
-  { id:'halo',    name:'Ореол',   premium:true,  kind:'halo'  },
-  { id:'chrome',  name:'Хром',    premium:true,  kind:'chrome'},
-  { id:'lines',   name:'Линии',   premium:true,  kind:'lines' },
-  { id:'blur',    name:'Дымка',   premium:true,  kind:'blur'  }
+  { id:'pure',  name:'Чёрный', premium:false, kind:'pure'  },
+  { id:'frame', name:'Рамка',  premium:false, kind:'frame' },
+  { id:'grid',  name:'Сетка',  premium:false, kind:'grid'  },
+  { id:'dots',  name:'Точки',  premium:false, kind:'dots'  },
+  { id:'halo',  name:'Ореол',  premium:true,  kind:'halo'  },
+  { id:'chrome',name:'Хром',   premium:true,  kind:'chrome'},
+  { id:'lines', name:'Линии',  premium:true,  kind:'lines' },
+  { id:'blur',  name:'Дымка',  premium:true,  kind:'blur'  }
 ];
 let curTpl = 0;
 const cv = document.getElementById('stickerCanvas');
 const ctx = cv.getContext('2d');
-
 function drawSticker(){
   const t = STICKER_BG[curTpl];
   const text = (document.getElementById('stickerText').value.trim() || 'ник');
   const S = 512;
   ctx.clearRect(0,0,S,S);
-
-  // чистый чёрный фон
-  ctx.fillStyle = '#000';
-  ctx.fillRect(0,0,S,S);
-
-  if(t.kind === 'frame'){
-    ctx.strokeStyle = '#f4f4f5'; ctx.lineWidth = 14;
-    ctx.strokeRect(28,28,S-56,S-56);
-  }
-  if(t.kind === 'grid'){
-    ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.lineWidth = 3;
-    ctx.beginPath();
-    for(let i=0;i<=S;i+=64){ ctx.moveTo(i,0); ctx.lineTo(i,S); ctx.moveTo(0,i); ctx.lineTo(S,i); }
-    ctx.stroke();
-  }
-  if(t.kind === 'dots'){
-    ctx.fillStyle = 'rgba(255,255,255,.55)';
-    for(let y=20;y<S;y+=32){ for(let x=20;x<S;x+=32){ ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2); ctx.fill(); } }
-  }
-  if(t.kind === 'halo'){
-    const g = ctx.createRadialGradient(S/2,S/2,10,S/2,S/2,S*0.7);
-    g.addColorStop(0,'rgba(60,60,68,.95)'); g.addColorStop(.6,'rgba(30,30,34,.4)'); g.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle = g; ctx.fillRect(0,0,S,S);
-  }
-  if(t.kind === 'chrome'){
-    const g = ctx.createLinearGradient(0,0,S,S);
-    g.addColorStop(0,'#2a2a30'); g.addColorStop(.5,'#0d0d0f'); g.addColorStop(1,'#34343c');
-    ctx.fillStyle = g; ctx.fillRect(0,0,S,S);
-  }
-  if(t.kind === 'lines'){
-    ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 5;
-    for(let i=-S;i<S*2;i+=34){ ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i+S,S); ctx.stroke(); }
-  }
-  if(t.kind === 'blur'){
-    const g = ctx.createRadialGradient(S/2,S/2,50,S/2,S/2,S);
-    g.addColorStop(0,'rgba(70,70,80,.9)'); g.addColorStop(.7,'rgba(20,20,24,.5)'); g.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle = g; ctx.fillRect(0,0,S,S);
-  }
-
+  ctx.fillStyle = '#000'; ctx.fillRect(0,0,S,S);
+  if(t.kind==='frame'){ ctx.strokeStyle='#f4f4f5'; ctx.lineWidth=14; ctx.strokeRect(28,28,S-56,S-56); }
+  if(t.kind==='grid'){ ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.lineWidth=3; ctx.beginPath(); for(let i=0;i<=S;i+=64){ctx.moveTo(i,0);ctx.lineTo(i,S);ctx.moveTo(0,i);ctx.lineTo(S,i);} ctx.stroke(); }
+  if(t.kind==='dots'){ ctx.fillStyle='rgba(255,255,255,.55)'; for(let y=20;y<S;y+=32){for(let x=20;x<S;x+=32){ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();}} }
+  if(t.kind==='halo'){ const g=ctx.createRadialGradient(S/2,S/2,10,S/2,S/2,S*.7); g.addColorStop(0,'rgba(60,60,68,.95)'); g.addColorStop(.6,'rgba(30,30,34,.4)'); g.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=g; ctx.fillRect(0,0,S,S); }
+  if(t.kind==='chrome'){ const g=ctx.createLinearGradient(0,0,S,S); g.addColorStop(0,'#2a2a30'); g.addColorStop(.5,'#0d0d0f'); g.addColorStop(1,'#34343c'); ctx.fillStyle=g; ctx.fillRect(0,0,S,S); }
+  if(t.kind==='lines'){ ctx.strokeStyle='rgba(255,255,255,.35)'; ctx.lineWidth=5; for(let i=-S;i<S*2;i+=34){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i+S,S);ctx.stroke();} }
+  if(t.kind==='blur'){ const g=ctx.createRadialGradient(S/2,S/2,50,S/2,S/2,S); g.addColorStop(0,'rgba(70,70,80,.9)'); g.addColorStop(.7,'rgba(20,20,24,.5)'); g.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=g; ctx.fillRect(0,0,S,S); }
   ctx.textAlign='center'; ctx.textBaseline='middle';
-  let fs = 150;
-  ctx.font = '800 ' + fs + 'px -apple-system,"Segoe UI",sans-serif';
-  while(ctx.measureText(text).width > S*0.8 && fs > 26){ fs -= 8; ctx.font='800 '+fs+'px -apple-system,"Segoe UI",sans-serif'; }
-  const cx = S/2, cy = S/2;
-  ctx.lineJoin = 'round';
-  if(t.kind === 'pure' || t.kind === 'chrome'){
-    // белый текст с мягкой тенью
-    ctx.shadowColor = 'rgba(255,255,255,.25)'; ctx.shadowBlur = 24;
-    ctx.fillStyle = '#fff';
-    ctx.fillText(text,cx,cy);
-    ctx.shadowBlur = 0;
-  } else {
-    ctx.strokeStyle = '#000'; ctx.lineWidth = Math.max(8, fs*0.12); ctx.strokeText(text,cx,cy);
-    ctx.fillStyle = '#fff'; ctx.fillText(text,cx,cy);
-  }
+  let fs = 140;
+  ctx.font = '700 '+fs+'px -apple-system,"Segoe UI",sans-serif';
+  while(ctx.measureText(text).width>S*.8 && fs>26){ fs-=8; ctx.font='700 '+fs+'px -apple-system,"Segoe UI",sans-serif'; }
+  const cx=S/2, cy=S/2;
+  ctx.lineJoin='round';
+  if(t.kind==='pure'||t.kind==='chrome'){ ctx.shadowColor='rgba(255,255,255,.28)'; ctx.shadowBlur=26; ctx.fillStyle='#fff'; ctx.fillText(text,cx,cy); ctx.shadowBlur=0; }
+  else { ctx.strokeStyle='#000'; ctx.lineWidth=Math.max(8,fs*.12); ctx.strokeText(text,cx,cy); ctx.fillStyle='#fff'; ctx.fillText(text,cx,cy); }
 }
 document.getElementById('stickerText').addEventListener('input', drawSticker);
-
+function isPremiumUser(){
+  try{
+    const u = TG && TG.initDataUnsafe && TG.initDataUnsafe.user;
+    if(u && u.is_premium) return true;
+    return lsGet('lg_premium','0')==='1';
+  }catch(e){ return false; }
+}
 function buildTplGrid(){
-  const grid = document.getElementById('tplGrid'); grid.innerHTML = '';
+  const grid = document.getElementById('tplGrid'); grid.innerHTML='';
   STICKER_BG.forEach((t,i)=>{
     const c = document.createElement('div');
-    c.className = 'tpl' + (i===curTpl?' active':'');
-    c.style.background = t.kind==='chrome' ? 'linear-gradient(135deg,#2a2a30,#0d0d0f)' : '#111114';
+    c.className = 'tpl'+(i===curTpl?' active':'');
+    c.style.background = t.kind==='chrome' ? 'linear-gradient(135deg,#2a2a30,#0d0d0f)' : '#101013';
     c.textContent = t.name;
     if(t.premium) c.innerHTML = t.name + '<span class="lock">★</span>';
     c.addEventListener('click', ()=>{
-      curTpl = i;
-      grid.querySelectorAll('.tpl').forEach(x=>x.classList.remove('active'));
-      c.classList.add('active');
+      curTpl=i; grid.querySelectorAll('.tpl').forEach(x=>x.classList.remove('active')); c.classList.add('active');
       updatePremiumUI(); drawSticker();
     });
     grid.appendChild(c);
@@ -423,8 +574,7 @@ function buildTplGrid(){
 }
 function updatePremiumUI(){
   const t = STICKER_BG[curTpl];
-  const locked = t.premium && !isPremiumUser();
-  document.getElementById('premiumNotice').style.display = locked ? 'block' : 'none';
+  document.getElementById('premiumNotice').style.display = (t.premium && !isPremiumUser()) ? 'block' : 'none';
 }
 document.getElementById('stickerDownload').addEventListener('click', ()=>{
   cv.toBlob(blob=>{
@@ -438,43 +588,8 @@ document.getElementById('stickerDownload').addEventListener('click', ()=>{
 });
 buildTplGrid(); drawSticker(); updatePremiumUI();
 
-/* ============ Шрифты ============ */
-function rangeMap(u,l,d){
-  const m = {};
-  for(let i=0;i<26;i++) m[String.fromCharCode(65+i)] = String.fromCharCode(u+i);
-  for(let i=0;i<26;i++) m[String.fromCharCode(97+i)] = String.fromCharCode(l+i);
-  for(let i=0;i<10;i++){
-    const c = String.fromCharCode(48+i);
-    m[c] = d ? (i===0 ? String.fromCharCode(0x24EA) : String.fromCharCode(0x2460+i-1)) : c;
-  }
-  return m;
-}
-const FONTS = [
-  {id:'bold', name:'Жирный', map:()=>rangeMap(0x1D400,0x1D41A,0x1D7CE)},
-  {id:'italic', name:'Курсив', map:()=>rangeMap(0x1D434,0x1D44E,null)},
-  {id:'bi', name:'Жирный курсив', map:()=>rangeMap(0x1D468,0x1D482,null)},
-  {id:'sans', name:'Гротеск', map:()=>rangeMap(0x1D5A0,0x1D5BA,null)},
-  {id:'sansb', name:'Гротеск жирный', map:()=>rangeMap(0x1D5D4,0x1D5EE,null)},
-  {id:'mono', name:'Моно', map:()=>rangeMap(0x1D670,0x1D68A,null)},
-  {id:'circ', name:'Круги', map:()=>rangeMap(0x24B6,0x24D0,true)}
-];
-const _m = {};
-function fontMap(id){ if(!_m[id]){ const s = FONTS.find(x=>x.id===id); _m[id] = s ? s.map() : {}; } return _m[id]; }
-function convert(t,id){ const m = fontMap(id); let o=''; for(const ch of t) o += (m[ch]||ch); return o; }
-function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function fillFonts(){
-  const inp = document.getElementById('fontInput').value;
-  const list = document.getElementById('fontList'); list.innerHTML='';
-  FONTS.forEach(f=>{
-    const it = document.createElement('div'); it.className = 'font-item';
-    const prev = inp ? convert(inp, f.id) : 'Стиль';
-    it.innerHTML = '<div class="fname">'+f.name+'</div><div class="fprev">'+esc(prev)+'</div>';
-    it.addEventListener('click', ()=>{ if(inp) copyText(prev, 'Скопировано'); });
-    list.appendChild(it);
-  });
-}
-document.getElementById('fontInput').addEventListener('input', fillFonts);
-fillFonts();
+/* инициализация */
+refreshProfile();
 </script>
 </body>
 </html>
