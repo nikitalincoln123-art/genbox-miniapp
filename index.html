@@ -312,6 +312,92 @@ input[type=range]::-moz-range-thumb{
   .tpl-grid{grid-template-columns:repeat(4,1fr)}
   .sticker-stage{width:min(300px,34vw)}
 }
+/* ==== Уровни / XP / скрытые финансы ==== */
+.level-hero{
+  position:relative;margin-top:16px;padding:20px 18px;border-radius:24px;overflow:hidden;
+  background:linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.14);
+}
+.level-hero::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;
+  background:conic-gradient(from 0deg, transparent 200deg, rgba(255,255,255,.7) 300deg, transparent 340deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  animation:edgeMove 7s linear infinite;pointer-events:none;
+}
+.lv-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.lv-tag{
+  font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:26px;color:#fff;
+  background:linear-gradient(135deg,#fff,#c9b8ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.lv-name{font-size:13px;color:var(--muted);margin-top:2px}
+.lv-xp{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;color:#fff;text-align:right}
+.lv-xp small{color:var(--muted);font-weight:500;font-size:11.5px;display:block}
+.xp-bar{height:8px;border-radius:8px;background:rgba(255,255,255,.1);overflow:hidden;margin-bottom:12px}
+.xp-fill{
+  height:100%;border-radius:8px;
+  background:linear-gradient(90deg,#3a3a44,#fff);
+  transition:width .8s cubic-bezier(.2,.8,.3,1);
+  box-shadow:0 0 18px rgba(255,255,255,.35);
+}
+.lv-reedem{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:16px;
+  padding:12px 14px;
+}
+.lv-reedem .lab{font-size:12.5px;color:var(--muted);line-height:1.45}
+.lv-reedem .use-btn{
+  flex:0 0 auto;background:#fff;color:#000;border:none;border-radius:50px;padding:9px 16px;
+  font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;transition:.15s;
+}
+.lv-reedem .use-btn:disabled{opacity:.4;cursor:default}
+/* скрытая финансовая часть */
+.finance-collapse{display:none;margin-top:18px}
+.finance-collapse.open{display:block;animation:pageIn .4s ease}
+.finance-head{
+  display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:12px;
+  padding:14px 4px;border-bottom:1px solid rgba(255,255,255,.08);
+}
+.finance-head .fh-lab{font-size:13px;font-weight:700;color:#fff;letter-spacing:.3px}
+.finance-head .fh-chevr{color:var(--muted);transition:transform .3s;font-size:14px}
+.history-section{margin-top:20px}
+.hist-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.hist-head .hh-t{font-size:11.5px;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;font-weight:700}
+.hist-head .hh-all{
+  color:var(--muted);font-size:12px;background:none;border:1px solid var(--line);border-radius:50px;
+  padding:6px 12px;font-family:inherit;cursor:pointer;transition:.15s;
+}
+.hist-head .hh-all:hover{color:#fff;border-color:rgba(255,255,255,.3)}
+.hist-list{display:flex;flex-direction:column;gap:6px}
+.hist-row{
+  display:flex;align-items:center;gap:12px;padding:11px 12px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;
+}
+.hist-ico{
+  width:34px;height:34px;border-radius:50%;flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;font-size:15px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+}
+.hist-main{flex:1;min-width:0}
+.hist-title{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.hist-am{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;flex:0 0 auto}
+.hist-am.plus{color:#38ef7d}
+.hist-am.minus{color:#ff6b6b}
+.hist-empty{text-align:center;color:var(--muted);font-size:12.5px;padding:26px 10px}
+.hist-pagination{display:flex;gap:8px;justify-content:center;margin-top:12px}
+.hist-pg{
+  background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--muted);border-radius:50px;
+  padding:6px 13px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:.15s;
+}
+.hist-pg:disabled{opacity:.3;cursor:default}
+.hist-pg.active{background:#fff;color:#000;border-color:#fff}
+/* бейдж профиля */
+.profile-mark{
+  display:inline-flex;align-items:center;gap:6px;margin-top:8px;
+  font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.3px;
+}
+.profile-mark .pn{width:8px;height:8px;border-radius:50%;background:#38ef7d;box-shadow:0 0 8px rgba(56,239,125,.8);animation:pulse 2s infinite}
 </style>
 </head>
 <body>
@@ -429,18 +515,58 @@ input[type=range]::-moz-range-thumb{
         <div>
           <div class="who" id="pName">Вы</div>
           <div class="tag" id="pTag">Telegram подключен</div>
+          <div class="profile-mark"><span class="pn"></span> Аккаунт защищён</div>
+        </div>
+        <div class="lv-chip" id="pLevelChip" style="margin-left:auto;text-align:right">
+          <div id="pLevelTag" style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px">Ур. 1</div>
+          <div class="lv-name" style="font-size:10px;color:var(--muted)">Lincoln</div>
         </div>
       </div>
-      <div class="stat-grid">
-        <div class="stat"><div class="k">Баланс Stars</div><div class="v" id="pStars">0 ⭐</div><div class="d">доступно для покупок</div></div>
-        <div class="stat"><div class="k">Стикеры куплены</div><div class="v" id="pStickers">0</div><div class="d">всего покупок</div></div>
-        <div class="stat"><div class="k">Пополнения</div><div class="v" id="pTopups">0 ⭐</div><div class="d">за всё время</div></div>
-        <div class="stat"><div class="k">Траты</div><div class="v" id="pSpends">0 ⭐</div><div class="d">на стикеры</div></div>
+
+      <!-- Уровень / XP -->
+      <div class="level-hero">
+        <div class="lv-row">
+          <div>
+            <div class="lv-tag" id="lvTag">Уровень 1</div>
+            <div class="lv-name" id="lvName">Новичок</div>
+          </div>
+          <div class="lv-xp" id="lvXp">0 / 100 <small>XP</small></div>
+        </div>
+        <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+        <div class="lv-reedem">
+          <div class="lab" id="lvReward">Награда на Ур. 2:<br>Скидка на стикер 10%</div>
+          <button class="use-btn" id="lvUse" disabled>Получить</button>
+        </div>
       </div>
-      <div class="list-row"><span class="lab">Статус переводов</span><span class="val" id="pTransfers">Нет активных</span></div>
-      <div class="list-row"><span class="lab">Привязанный аккаунт</span><span class="val" id="pAccount">Telegram</span></div>
-      <div class="list-row"><span class="lab">Стикеры в вашем паке</span><span class="val" id="pPack">—</span></div>
-      <div class="note">Здесь появятся реальные данные (баланс Stars, покупки, пополнения) после подключения бота и Telegram Payments. Сейчас показана структура кабинета; привязка к Telegram выполняется автоматически при открытии через бота.</div>
+
+      <!-- Скрытые финансы -->
+      <div class="finance-head" id="financeHead">
+        <span class="fh-lab">Финансы и покупки</span>
+        <span class="fh-chevr" id="financeChevr">⌄</span>
+      </div>
+      <div class="finance-collapse" id="financeCollapse">
+        <div class="stat-grid">
+          <div class="stat"><div class="k">Баланс Stars</div><div class="v" id="pStars">0 ⭐</div><div class="d">доступно для покупок</div></div>
+          <div class="stat"><div class="k">Стикеры куплены</div><div class="v" id="pStickers">0</div><div class="d">всего покупок</div></div>
+          <div class="stat"><div class="k">Пополнения</div><div class="v" id="pTopups">0 ⭐</div><div class="d">за всё время</div></div>
+          <div class="stat"><div class="k">Траты</div><div class="v" id="pSpends">0 ⭐</div><div class="d">на стикеры</div></div>
+        </div>
+        <div class="list-row"><span class="lab">Статус переводов</span><span class="val" id="pTransfers">Нет активных</span></div>
+        <div class="list-row"><span class="lab">Привязанный аккаунт</span><span class="val" id="pAccount">Telegram</span></div>
+        <div class="list-row"><span class="lab">Стикеры в вашем паке</span><span class="val" id="pPack">—</span></div>
+      </div>
+
+      <!-- История операций -->
+      <div class="history-section">
+        <div class="hist-head">
+          <span class="hh-t">История операций</span>
+          <button class="hh-all" id="histToggle">Все</button>
+        </div>
+        <div class="hist-list" id="histList"></div>
+        <div class="hist-pagination" id="histPagination"></div>
+      </div>
+
+      <div class="note">Данные о балансе, покупках и операциях появятся автоматически после подключения платежей. Привязка к Telegram происходит при открытии через бота.</div>
     </div>
   </section>
 
@@ -517,9 +643,26 @@ document.getElementById('homeBtn').addEventListener('click', ()=> switchPage('pr
 /* ============ Профиль ============ */
 function lsGet(k,d){ try{ const v = localStorage.getItem(k); return v===null?d:v; }catch(e){ return d; } }
 function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+/* Уровни: [порог XP, название, награда-скидка%] */
+const LEVELS = [
+  { xp:0,    name:'Новичок',      reward:0  },
+  { xp:100,  name:'Исследователь',reward:10 },
+  { xp:300,  name:'Знаток',       reward:15 },
+  { xp:600,  name:'Эксперт',      reward:20 },
+  { xp:1000, name:'Легенда',      reward:30 }
+];
+function levelInfo(xp){
+  let lv = 0;
+  for(let i=0;i<LEVELS.length;i++){ if(xp>=LEVELS[i].xp) lv=i; }
+  const cur = LEVELS[lv];
+  const next = LEVELS[lv+1] || null;
+  const curXp = cur.xp, need = next ? next.xp : cur.xp;
+  const pct = next ? Math.min(100, Math.round((xp-curXp)/(need-curXp)*100)) : 100;
+  return { lv:lv+1, name:cur.name, reward:cur.reward, xp, need, curXp, pct, maxed: !next };
+}
 function refreshProfile(){
   const u = TG && TG.initDataUnsafe && TG.initDataUnsafe.user;
-  let initials = 'В';
+  let initials = (u && u.first_name && u.first_name[0]) || 'В';
   if(u){
     initials = (u.first_name||'')[0] || 'В';
     document.getElementById('pName').textContent = u.first_name + (u.last_name?' '+u.last_name:'');
@@ -530,7 +673,101 @@ function refreshProfile(){
   document.getElementById('pStickers').textContent = lsGet('lg_bought','0');
   document.getElementById('pTopups').textContent = lsGet('lg_topups','0') + ' ⭐';
   document.getElementById('pSpends').textContent = lsGet('lg_spends','0') + ' ⭐';
+  /* уровень */
+  const xp = +lsGet('lg_xp','0');
+  const info = levelInfo(xp);
+  document.getElementById('lvTag').textContent = 'Уровень '+info.lv;
+  document.getElementById('lvName').textContent = info.name;
+  document.getElementById('lvXp').innerHTML = (info.maxed ? info.xp : info.xp + ' / ' + info.need) + ' <small>XP</small>';
+  document.getElementById('xpFill').style.width = info.pct + '%';
+  document.getElementById('pLevelTag').textContent = 'Ур. '+info.lv;
+  const rewardBtn = document.getElementById('lvUse');
+  const claimed = lsGet('lg_reward_'+info.lv,'0')==='1';
+  if(info.maxed){
+    document.getElementById('lvReward').innerHTML = 'Максимальный уровень';
+    rewardBtn.innerHTML = 'Макс.'; rewardBtn.disabled = true;
+  } else {
+    const nextN = LEVELS[info.lv];
+    document.getElementById('lvReward').innerHTML = 'Награда на Ур. '+(info.lv+1)+':<br>Скидка на стикер '+nextN.reward+'%';
+    if(!claimed){
+      rewardBtn.disabled = true; rewardBtn.innerHTML = 'Доступен на Ур. '+(info.lv+1);
+    } else {
+      rewardBtn.disabled = true; rewardBtn.innerHTML = 'Получено ✓';
+    }
+  }
 }
+/* переключение видимости финансов */
+document.getElementById('financeHead').addEventListener('click', ()=>{
+  const c = document.getElementById('financeCollapse');
+  c.classList.toggle('open');
+  document.getElementById('financeChevr').style.transform = c.classList.contains('open') ? 'rotate(180deg)' : '';
+});
+/* история операций */
+function getHistory(){
+  try{ const h = JSON.parse(localStorage.getItem('lg_history')||'[]'); return Array.isArray(h)?h:[]; }catch(e){ return []; }
+}
+function renderHistory(){
+  const hist = getHistory();
+  const wrap = document.getElementById('histList');
+  const pgBox = document.getElementById('histPagination');
+  if(!hist.length){
+    wrap.innerHTML = '<div class="hist-empty">Пока нет операций.<br>Они появятся после первой покупки или пополнения.</div>';
+    pgBox.innerHTML = '';
+    return;
+  }
+  const REV = 3;
+  let cur = 0;
+  const renderPage = ()=>{
+    const page = hist.slice(cur*REV, cur*REV+REV);
+    wrap.innerHTML = '';
+    page.forEach(h=>{
+      const row = document.createElement('div'); row.className='hist-row';
+      const plus = h.type==='topup';
+      row.innerHTML =
+        '<div class="hist-ico">'+(plus?'⬆':'⬇')+'</div>'+
+        '<div class="hist-main"><div class="hist-title">'+h.title+'</div><div class="hist-sub">'+h.date+'</div></div>'+
+        '<div class="hist-am '+(plus?'plus':'minus')+'">'+(plus?'+':'-')+h.amount+' ⭐</div>';
+      wrap.appendChild(row);
+    });
+    /* пагинация */
+    const pages = Math.ceil(hist.length/REV);
+    let ph = '';
+    for(let i=0;i<pages;i++){
+      ph += '<button class="hist-pg'+(i===cur?' active':'')+'" data-i="'+i+'">'+(i+1)+'</button>';
+    }
+    pgBox.innerHTML = ph;
+    pgBox.querySelectorAll('.hist-pg').forEach(b=>{
+      b.addEventListener('click', ()=>{ cur = +b.dataset.i; renderPage(); buzz(5); });
+    });
+  };
+  renderPage();
+}
+document.getElementById('histToggle').addEventListener('click', ()=>{
+  const t = document.getElementById('histToggle');
+  t.textContent = t.textContent==='Все' ? 'Свернуть' : 'Все';
+  if(t.textContent==='Свернуть'){
+    /* показать все записи на странице */
+    const hist = getHistory();
+    const wrap = document.getElementById('histList');
+    wrap.innerHTML='';
+    hist.forEach(h=>{
+      const plus = h.type==='topup';
+      const row = document.createElement('div'); row.className='hist-row';
+      row.innerHTML =
+        '<div class="hist-ico">'+(plus?'⬆':'⬇')+'</div>'+
+        '<div class="hist-main"><div class="hist-title">'+h.title+'</div><div class="hist-sub">'+h.date+'</div></div>'+
+        '<div class="hist-am '+(plus?'plus':'minus')+'">'+(plus?'+':'-')+h.amount+' ⭐</div>';
+      wrap.appendChild(row);
+    });
+    document.getElementById('histPagination').innerHTML='';
+  } else renderHistory();
+});
+function addHistory(entry){
+  const hist = getHistory();
+  hist.unshift(entry);
+  try{ localStorage.setItem('lg_history', JSON.stringify(hist.slice(0,200))); }catch(e){}
+}
+renderHistory();
 function copyText(txt, ok){
   if(navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(txt).then(()=>toast(ok||'Скопировано')).catch(()=>fallbackCopy(txt));
