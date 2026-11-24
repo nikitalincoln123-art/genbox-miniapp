@@ -193,6 +193,21 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .anon li{color:var(--muted);font-size:12.5px;line-height:1.55;padding:8px 0 8px 22px;position:relative;border-bottom:1px solid rgba(255,255,255,.05)}
 .anon li::before{content:"→";position:absolute;left:0;color:#fff;font-weight:700}
 .toast{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);background:#141418;color:#fff;padding:10px 18px;border-radius:50px;font-size:12.5px;font-weight:600;z-index:99;border:1px solid var(--line);transition:opacity .3s;opacity:0;pointer-events:none;white-space:nowrap;box-shadow:0 10px 30px rgba(0,0,0,.8)}
+/* ==== Полноэкранный просмотр стикера ==== */
+.viewer{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.94);display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;animation:pageIn .3s ease}
+.viewer.open{display:flex}
+.viewer-head{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:440px;margin-bottom:14px}
+.viewer-title{font-family:'Space Grotesk',sans-serif;font-size:19px;font-weight:700;color:#fff}
+.viewer-close{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.07);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.viewer-stage{position:relative;width:min(300px,72vw);aspect-ratio:1;border-radius:24px;overflow:hidden;border:1px solid rgba(255,255,255,.16);box-shadow:0 24px 70px rgba(0,0,0,.9)}
+.viewer-stage canvas{width:100%;height:100%;display:block}
+.viewer-nav{display:flex;align-items:center;gap:18px;margin-top:18px}
+.vnav{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.07);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s}
+.vnav:active{transform:scale(.94)}
+.viewer-idx{font-size:12.5px;color:var(--muted);font-weight:600;min-width:52px;text-align:center}
+.viewer-actions{display:flex;gap:10px;margin-top:20px;width:100%;max-width:440px}
+.viewer-actions .btn{flex:1}
+.viewer-sub{margin-top:10px;font-size:12px;color:var(--muted);text-align:center;max-width:440px}
 </style>
 </head>
 <body>
@@ -427,6 +442,25 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 
 <div class="toast" id="toast"></div>
 
+<!-- Полноэкранный просмотр -->
+<div class="viewer" id="viewer">
+  <div class="viewer-head">
+    <div class="viewer-title" id="viewerTitle">Стикер</div>
+    <button class="viewer-close" id="viewerClose">✕</button>
+  </div>
+  <div class="viewer-stage"><canvas id="viewerCanvas" width="512" height="512"></canvas></div>
+  <div class="viewer-nav">
+    <button class="vnav" id="viewerPrev">‹</button>
+    <div class="viewer-idx" id="viewerIdx">1 / 27</div>
+    <button class="vnav" id="viewerNext">›</button>
+  </div>
+  <div class="viewer-actions">
+    <button class="btn" id="viewerAdd">В набор</button>
+    <button class="btn ghost" id="viewerDownload">Скачать</button>
+  </div>
+  <div class="viewer-sub">Листай ‹ › или свайпай, чтобы посмотреть все шаблоны</div>
+</div>
+
 <script>
 'use strict';
 
@@ -573,25 +607,84 @@ document.querySelectorAll('#nickStyleChips .chip').forEach(c=>{ c.addEventListen
 
 /* ============ Стикеры: шаблоны ============ */
 /* Монохромные (ч/б) шаблоны: эмодзи-предмет + id */
-const BW_TPL = [
-  {e:'⚔️',n:'Меч',id:'LG · 001'},{e:'🔪',n:'Нож',id:'LG · 002'},{e:'🎧',n:'Гарнитура',id:'LG · 003'},
-  {e:'🍀',n:'Клевер',id:'LG · 004'},{e:'💀',n:'Череп',id:'LG · 005'},{e:'🐸',n:'Пепе',id:'LG · 006'},
-  {e:'🚗',n:'Авто',id:'LG · 007'},{e:'💍',n:'Кольцо',id:'LG · 008'},{e:'🧰',n:'Сундук',id:'LG · 009'},
-  {e:'🎅',n:'Санта',id:'LG · 010'},{e:'🔑',n:'Ключ',id:'LG · 011'},{e:'📦',n:'Коробка',id:'LG · 012'},
-  {e:'🎲',n:'Кубик',id:'LG · 013'},{e:'🪙',n:'Монета',id:'LG · 014'},{e:'🔥',n:'Пламя',id:'LG · 015'}
-];
-const COLOR_TPL = [
-  {e:'🌈',n:'Радуга',id:'LG · 016'},{e:'🌟',n:'Звезда',id:'LG · 017'},{e:'💖',n:'Сердце',id:'LG · 018'},
-  {e:'🎁',n:'Подарок',id:'LG · 019'},{e:'🦄',n:'Единорог',id:'LG · 020'},{e:'🚀',n:'Ракета',id:'LG · 021'},
-  {e:'🪐',n:'Планета',id:'LG · 022'},{e:'🌊',n:'Волна',id:'LG · 023'},{e:'🍭',n:'Леденец',id:'LG · 024'},
-  {e:'🎪',n:'Цирк',id:'LG · 025'},{e:'⚡',n:'Молния',id:'LG · 026'},{e:'🧿',n:'Оберег',id:'LG · 027'}
-];
-const ALL_TPL = [].concat(BW_TPL.map(t=>({...t,bw:true})), COLOR_TPL.map(t=>({...t,bw:false})));
-let pickedEmoji = {value:'⭐'};
+/* Монохромные контурные иконки (SVG-пути, как на референсе) */
+const ICONS_BW = {
+  sword:'M9 3l6 6-2 2-6-6z M9 3V1M15 9h2M5 13l6-6 4 4-8 6-3 2zM9 15l-3 4',
+  knife:'M4 19c5 0 12-3 14-7 1-2 0-4-2-4-1 0-2 1-2 2 0 0-6 0-8 3-1 1 0 3 1 3zM4 19l-1 2',
+  headset:'M6 14v-2a6 6 0 0 1 12 0v2M4 14a2 2 0 0 1 2-2h1v5H6a2 2 0 0 1-2-2zm14 0a2 2 0 0 0-2-2h-1v5h1a2 2 0 0 0 2-2z',
+  clover:'M12 12m-3 0a3 3 0 1 1 6 0 3 3 0 1 1-6 0M12 12L8 4M12 12l8-2M12 12l-2 8M12 12l4-7',
+  skull:'M16 5a6 6 0 0 1 6 6c0 1-.2 2-.6 3H19v3a1 1 0 0 1-1 1h-1v2h-4v-1M8 5a6 6 0 0 0-6 6c0 1 .2 2 .6 3H5v3a1 1 0 0 0 1 1h1v2h4v-1M10 11a1 1 0 1 0 2 0 1 1 0 0 0-2 0zm2 0a1 1 0 1 0 2 0 1 1 0 0 0-2 0zM12 12v4',
+  frog:'M5 13a7 7 0 0 1 14 0v3a3 3 0 0 1-3 3h-2l-2 2-2-6M5 13a7 7 0 0 0 6 8M9 15a1 1 0 1 0 2 0 1 1 0 0 0-2 0zm4 0a1 1 0 1 0 2 0 1 1 0 0 0-2 0zM3 9l2 2M4 7l1 1M21 9l-2 2M20 7l-1 1',
+  car:'M4 16v-4l2-6h12l2 6v4M4 16h-1v3h2M20 16h1v3h-2M7 16h-1M18 16h-1M8 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm8 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z',
+  ring:'M12 12m-8 0a8 8 0 1 1 16 0 8 8 0 1 1-16 0M12 5v2M12 17v2M5 12h2M17 12h2',
+  chest:'M7 8V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2M4 8h16v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8zm8 2v6M8 12h8',
+  santa:'M6 16a6 6 0 0 1 12 0M9 16a2 2 0 0 1 4 0 2 2 0 0 1 4 0M8 9c0-3 4-3 4 0 0-3 4-3 4 0M12 6V4M4 14l-2 2M20 14l2 2',
+  key:'M14 11a5 5 0 1 0-4.6-3L3 14l3 3 1-1 2 2 1-1 2-2a5 5 0 0 0 2.6-.4zM14 11m-2 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0z',
+  box:'M3 8l9-5 9 5-9 5-9-5zm0 0v10l9 5 9-5V8M12 13v10',
+  dice:'M7 4h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zm0 0v14M9 8a1 1 0 1 0 2 0 1 1 0 0 0-2 0zm4 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0zm4 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0z',
+  coin:'M12 12m-9 0a9 9 0 1 1 18 0 9 9 0 1 1-18 0M10 8h4M12 8v8M10 16h4',
+  flame:'M12 4c1 3-3 4-3 7a3 3 0 0 0 6 0c0-1-1-2-1-2s2 1 2 4a4 4 0 0 1-8 0c0-4 4-6 4-9z'
+};
+const ICONS_COLOR = {
+  rainbow:'M4 17a8 8 0 0 1 16 0M4 17h-1M20 17h1M7 17a5 5 0 0 1 10 0M7 17h-1M17 17h1M10 17a2 2 0 0 1 4 0',
+  star:'M12 3l2.7 5.8 6.3.7-4.7 4.3 1.3 6.2L12 17l-5.6 3 1.3-6.2L3 9.5l6.3-.7z',
+  heart:'M12 20s-7-4.6-9-9c-1-2.4.6-5 3-5 1.9 0 3.6 1 4.5 2.6C11.4 7.6 13 6 15 6c2.9 0 5 2.4 3.6 5.6-.6 1.6-2.4 3.4-3.6 4.4z',
+  gift:'M4 11h16v9H4zm4-2h8M12 9v9M12 11c0-3 2-5 2-5s2 0 2 2-2 3-2 3-4 0-4-3zm0 2v1',
+  unicorn:'M6 12a6 6 0 0 1 12 0M6 12a5 5 0 0 1 5 5 5 5 0 0 1-5-5zm-2 0H3M21 12h-2M8 12V8M12 16c0 3-2 4-2 4M12 16c0 2 1 4 1 4M12 4l1 3',
+  rocket:'M12 16c-3 0-6-3-6-8h12c0 5-3 8-6 8zm0 0c1 3 0 6 0 6s-1-3 0-6zM9 6C9 3 12 2 12 2s3 1 3 4M10 8a2 2 0 1 0 4 0 2 2 0 0 0-4 0z',
+  planet:'M12 12m-8 0a8 8 0 1 1 16 0 8 8 0 1 1-16 0M12 4c3-2 7 2 8 6-3 2-8 2-8 2s5 4 3 8c1-1 3-3 4-5',
+  wave:'M2 12c2-3 4-3 6 0s4 3 6 0 4-3 6 0M2 18c2-3 4-3 6 0s4 3 6 0 4-3 6 0',
+  candy:'M8 8c2-3 6-3 8 0 2 3 0 7-3 8s-8-5-5-8zm-1 10 2-6M17 18l-2-6',
+  circus:'M6 16h12M12 14v2M7 14h2M15 14h2M8 8a4 4 0 0 1 8 0M9 9a3 3 0 0 1 6 0M12 9l1 3M12 9l-1 3M12 6v-2',
+  bolt:'M13 2L4 14h6l-1 8 9-12h-6z',
+  talisman:'M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 0v9M12 22l-6-6M12 22l6-6'
+};
+let curBWicon = {};
+/* сборка списка шаблонов из словарей */
+function buildTplList(){
+  const bw = Object.entries(ICONS_BW).map(([k,path],i)=>({key:k,path,n:TPL_NAMES_BW[k]||k,id:'LG · '+(i+1+'').padStart(3,'0'),bw:true}));
+  const col = Object.entries(ICONS_COLOR).map(([k,path],i)=>({key:k,path,n:TPL_NAMES_COLOR[k]||k,id:'LG · '+(bw.length+i+1+'').padStart(3,'0'),bw:false}));
+  return [].concat(bw,col);
+}
+const TPL_NAMES_BW = {
+  sword:'Меч',knife:'Нож',headset:'Гарнитура',clover:'Клевер',skull:'Череп',frog:'Пепе',
+  car:'Авто',ring:'Кольцо',chest:'Сундук',santa:'Санта',key:'Ключ',box:'Коробка',
+  dice:'Кубик',coin:'Монета',flame:'Пламя'
+};
+const TPL_NAMES_COLOR = {
+  rainbow:'Радуга',star:'Звезда',heart:'Сердце',gift:'Подарок',unicorn:'Единорог',rocket:'Ракета',
+  planet:'Планета',wave:'Волна',candy:'Леденец',circus:'Цирк',bolt:'Молния',talisman:'Оберег'
+};
+const ALL_TPL = buildTplList();
+const BW_TPL = ALL_TPL.filter(t=>t.bw);
+const COLOR_TPL = ALL_TPL.filter(t=>!t.bw);
+let pickedTpl = ALL_TPL[0];
 let curBW = true;
 const MAX_SET = 20;
 let mySet = new Set();
 function setCount(){ document.getElementById('trayCnt').textContent = mySet.size + ' / ' + MAX_SET + ' выбрано'; }
+
+/* рисуем монохромную/цветную контурную иконку на canvas */
+function drawIcon(cv, t, lineW){
+  const g = cv.getContext('2d');
+  const w = cv.width;
+  if(!t.bw){ const gr=g.createLinearGradient(0,0,w,w); gr.addColorStop(0,'#241f40'); gr.addColorStop(1,'#0d0d14'); g.fillStyle=gr; } else { g.fillStyle='#101014'; }
+  g.fillRect(0,0,w,w);
+  g.strokeStyle = t.bw ? '#f4f4f5' : '#d8c4ff';
+  g.lineWidth = lineW || Math.max(1.2, w*0.014);
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  g.save();
+  /* пути в сетке 0..24: масштаб под ширину, центр в (w/2, w*0.45) */
+  const s = (w*0.8)/24;
+  g.translate(w/2 - 12*s, w*0.45 - 12*s);
+  g.scale(s, s);
+  try{ const p = new Path2D(t.path); g.stroke(p); }catch(e){}
+  g.restore();
+  g.font = '800 ' + Math.floor(w*0.09) + 'px "Inter",sans-serif';
+  g.textAlign='center'; g.textBaseline='middle';
+  g.fillStyle = t.bw ? 'rgba(255,255,255,.75)' : 'rgba(230,200,255,.9)';
+  g.fillText('ХАОС', w/2, w*0.92);
+}
 function buildMiniGrid(){
   const grid=document.getElementById('miniGrid'); grid.innerHTML='';
   const list=curBW?BW_TPL.slice(0,9):COLOR_TPL.slice(0,9);
@@ -599,24 +692,15 @@ function buildMiniGrid(){
     const c=document.createElement('div'); c.className='tpl-card';
     c.innerHTML = '<div class="t-check">✓</div><div class="t-info"><div class="t-name">'+t.n+'</div><div class="t-id">'+t.id+'</div></div>';
     const cv=document.createElement('canvas'); cv.width=128; cv.height=128;
-    const g=cv.getContext('2d');
-    if(!t.bw){ const gr=g.createLinearGradient(0,0,128,128); gr.addColorStop(0,'#241f35'); gr.addColorStop(1,'#0d0d12'); g.fillStyle=gr; } else { g.fillStyle='#101014'; }
-    g.fillRect(0,0,128,128);
-    g.font='44px serif'; g.textAlign='center'; g.textBaseline='middle';
-    g.shadowColor='rgba(255,255,255,.25)'; g.shadowBlur=6;
-    g.fillText(t.e,64,58);
-    g.shadowBlur=0;
-    g.font='800 10px "Inter",sans-serif'; g.fillStyle='#fff';
-    g.shadowColor='rgba(0,0,0,.9)'; g.shadowBlur=4;
-    g.fillText('ХАОС',64,116); g.shadowBlur=0;
-    g.strokeStyle='rgba(255,255,255,.5)'; g.lineWidth=1.5; g.strokeRect(8,8,112,64);
+    drawIcon(cv, t, 2);
     c.insertBefore(cv, c.firstChild);
     c.addEventListener('click',()=>{
       buzz(6);
-      pickedEmoji={value:t.e};
+      pickedTpl = t;
       drawSticker();
       grid.querySelectorAll('.tpl-card').forEach(x=>x.classList.remove('active'));
       c.classList.add('active');
+      openViewer(t);
     });
     grid.appendChild(c);
   });
@@ -629,27 +713,35 @@ function getStickerCanvas(w){
   const c=document.createElement('canvas'); c.width=w; c.height=w;
   const g=c.getContext('2d');
   const text=(document.getElementById('stickerText').value.trim()||'ник');
-  const em=pickedEmoji.value||'⭐';
-  // фон: ч/б или цветной
-  const t=ALL_TPL.find(x=>x.e===em);
+  const t = pickedTpl;
   const bw = t ? t.bw : curBW;
-  if(!bw){ const gr=g.createLinearGradient(0,0,w,w); gr.addColorStop(0,'#241f35'); gr.addColorStop(1,'#0d0d12'); g.fillStyle=gr; }
+  if(!bw){ const gr=g.createLinearGradient(0,0,w,w); gr.addColorStop(0,'#241f40'); gr.addColorStop(1,'#0d0d14'); g.fillStyle=gr; }
   else { g.fillStyle='#000'; }
   g.fillRect(0,0,w,w);
   // рамка
   g.strokeStyle=bw?'rgba(255,255,255,.5)':'rgba(255,255,255,.25)'; g.lineWidth=w*0.012; g.strokeRect(w*0.04,w*0.04,w*0.92,w*0.92);
-  // эмодзи крупно сверху
-  g.font=w*0.34+'px serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(em,w/2,w*0.34);
+  // иконка крупно сверху
+  if(t && t.path){
+    g.strokeStyle = bw ? '#f4f4f5' : '#d8c4ff';
+    g.lineWidth = w*0.014; g.lineCap='round'; g.lineJoin='round';
+    g.save();
+    const s = (w*0.78)/24;
+    g.translate(w/2 - 12*s, w*0.34 - 12*s);
+    g.scale(s, s);
+    try{ const p=new Path2D(t.path); g.stroke(p); }catch(e){}
+    g.restore();
+  }
   // ник по центру/низу
-  g.font='800 '+(w*0.16)+'px "Segoe UI",sans-serif';
+  g.font='800 '+(w*0.15)+'px "Segoe UI",sans-serif';
   g.fillStyle='#fff';
   let txt=text;
-  while(g.measureText(txt).width>w*0.82 && txt.length>1){ txt=txt.slice(0,-1); g.font='800 '+(w*0.16)+'px "Segoe UI",sans-serif'; }
+  while(g.measureText(txt).width>w*0.82 && txt.length>1){ txt=txt.slice(0,-1); g.font='800 '+(w*0.15)+'px "Segoe UI",sans-serif'; }
   g.fillText(txt,w/2,w*0.72);
   // подпись
   g.font='700 '+(w*0.045)+'px "Inter",sans-serif'; g.fillStyle='rgba(255,255,255,.5)'; g.fillText('ХАОС',w/2,w*0.92);
   return c;
 }
+function medialScale(k){ return k; }
 function drawSticker(){
   const pv=document.getElementById('packPreview')||document.getElementById('createdCanvas');
   if(!pv) return;
@@ -665,27 +757,14 @@ function buildStudioGrid(){
   const grid=document.getElementById('studioGrid'); grid.innerHTML='';
   const list=studioBW?BW_TPL:COLOR_TPL;
   list.forEach(t=>{
-    const globalIdx=ALL_TPL.findIndex(x=>x.id===t.id);
     const c=document.createElement('div'); c.className='tpl-card'+(mySet.has(t.id)?' active':'');
     c.innerHTML = '<div class="t-check">✓</div><div class="t-info"><div class="t-name">'+t.n+'</div><div class="t-id">'+t.id+'</div></div>';
     const cv=document.createElement('canvas'); cv.width=128; cv.height=128;
-    const g=cv.getContext('2d');
-    if(!t.bw){ const gr=g.createLinearGradient(0,0,128,128); gr.addColorStop(0,'#241f35'); gr.addColorStop(1,'#0d0d12'); g.fillStyle=gr; } else { g.fillStyle='#101014'; }
-    g.fillRect(0,0,128,128);
-    g.font='44px serif'; g.textAlign='center'; g.textBaseline='middle';
-    g.shadowColor='rgba(255,255,255,.25)'; g.shadowBlur=6;
-    g.fillText(t.e,64,58);
-    g.shadowBlur=0;
-    g.font='800 10px "Inter",sans-serif'; g.fillStyle='#fff';
-    g.shadowColor='rgba(0,0,0,.9)'; g.shadowBlur=4;
-    g.fillText('ХАОС',64,116); g.shadowBlur=0;
-    g.strokeStyle='rgba(255,255,255,.5)'; g.lineWidth=1.5; g.strokeRect(8,8,112,64);
+    drawIcon(cv, t, 2);
     c.insertBefore(cv, c.firstChild);
     c.addEventListener('click',()=>{
       buzz(6);
-      if(mySet.has(t.id)){ mySet.delete(t.id); c.classList.remove('active'); }
-      else { if(mySet.size<MAX_SET){ mySet.add(t.id); c.classList.add('active'); } else { toast('Набор полон (20)'); } }
-      setCount(); buildStudioGrid();
+      openViewer(t);
     });
     grid.appendChild(c);
   });
@@ -695,6 +774,77 @@ function buildStudioGrid(){
   document.getElementById('cntBw').textContent = BW_TPL.length;
   document.getElementById('cntColor').textContent = COLOR_TPL.length;
 }
+
+/* ============ Полноэкранный просмотр ============ */
+const vc = document.getElementById('viewerCanvas');
+let viewerIdx = 0;
+let viewerList = [];
+function openViewer(t){
+  const all = ALL_TPL;
+  viewerIdx = all.findIndex(x=>x.id===t.id);
+  viewerList = all;
+  drawViewer();
+  document.getElementById('viewer').classList.add('open');
+}
+function drawViewer(){
+  const t = viewerList[viewerIdx];
+  const cv = vc; cv.width=512; cv.height=512;
+  const g = cv.getContext('2d');
+  const text=(document.getElementById('stickerText').value.trim()||'ник');
+  const bw=t.bw;
+  if(!bw){ const gr=g.createLinearGradient(0,0,512,512); gr.addColorStop(0,'#241f40'); gr.addColorStop(1,'#0d0d14'); g.fillStyle=gr; } else { g.fillStyle='#0a0a0d'; }
+  g.fillRect(0,0,512,512);
+  g.strokeStyle='rgba(255,255,255,.5)'; g.lineWidth=6; g.strokeRect(20,20,472,472);
+  // иконка
+  g.strokeStyle=bw?'#f4f4f5':'#d8c4ff'; g.lineWidth=9; g.lineCap='round'; g.lineJoin='round';
+  g.save();
+  const vs = (512*0.72)/24;
+  g.translate(256 - 12*vs, 190 - 12*vs);
+  g.scale(vs, vs);
+  try{ const p=new Path2D(t.path); g.stroke(p); }catch(e){}
+  g.restore();
+  // текст
+  g.font='800 72px "Segoe UI",sans-serif'; g.fillStyle='#fff'; g.textAlign='center'; g.textBaseline='middle';
+  let txt=text;
+  while(g.measureText(txt).width>420 && txt.length>1){ txt=txt.slice(0,-1); g.font='800 72px "Segoe UI",sans-serif'; }
+  g.fillText(txt,256,360);
+  g.font='700 22px "Inter",sans-serif'; g.fillStyle='rgba(255,255,255,.5)'; g.fillText('ХАОС',256,470);
+  document.getElementById('viewerTitle').textContent = t.n;
+  document.getElementById('viewerIdx').textContent = (viewerIdx+1)+' / '+viewerList.length;
+  const inSet = mySet.has(t.id);
+  document.getElementById('viewerAdd').textContent = inSet ? 'Убрать из набора' : 'В набор';
+}
+document.getElementById('viewerNext').addEventListener('click', ()=>{ buzz(5); viewerIdx=(viewerIdx+1)%viewerList.length; pickFromViewer(); drawViewer(); });
+document.getElementById('viewerPrev').addEventListener('click', ()=>{ buzz(5); viewerIdx=(viewerIdx-1+viewerList.length)%viewerList.length; pickFromViewer(); drawViewer(); });
+function pickFromViewer(){ pickedTpl = viewerList[viewerIdx]; drawSticker(); }
+document.getElementById('viewerAdd').addEventListener('click', ()=>{
+  buzz(8);
+  const t = viewerList[viewerIdx];
+  if(mySet.has(t.id)){ mySet.delete(t.id); toast('Убрано из набора'); }
+  else { if(mySet.size<MAX_SET){ mySet.add(t.id); toast('Добавлено в набор'); } else { toast('Набор полон (20)'); } }
+  setCount(); drawViewer(); buildStudioGrid(); buildMiniGrid();
+});
+document.getElementById('viewerDownload').addEventListener('click', ()=>{
+  const t = viewerList[viewerIdx];
+  pickedTpl = t; drawSticker();
+  const c = getStickerCanvas(512);
+  c.toBlob(blob=>{
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download='sticker-'+t.key+'.png'; document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },300); toast('Стикер скачан');
+  },'image/png');
+});
+document.getElementById('viewerClose').addEventListener('click', ()=> document.getElementById('viewer').classList.remove('open'));
+document.getElementById('viewer').addEventListener('click', e=>{ if(e.target.id==='viewer' || e.target.className==='viewer') document.getElementById('viewer').classList.remove('open'); });
+/* свайп */
+let vTouchX=null;
+document.getElementById('viewer').addEventListener('touchstart', e=>{ vTouchX=e.touches[0].clientX; }, {passive:true});
+document.getElementById('viewer').addEventListener('touchend', e=>{
+  if(vTouchX===null) return;
+  const dx = e.changedTouches[0].clientX - vTouchX;
+  if(Math.abs(dx)>50){ if(dx<0) document.getElementById('viewerNext').click(); else document.getElementById('viewerPrev').click(); }
+  vTouchX=null;
+}, {passive:true});
 document.getElementById('studioTabBw').addEventListener('click',()=>{ studioBW=true; document.getElementById('studioTabBw').classList.add('active'); document.getElementById('studioTabColor').classList.remove('active'); buildStudioGrid(); });
 document.getElementById('studioTabColor').addEventListener('click',()=>{ studioBW=false; document.getElementById('studioTabColor').classList.add('active'); document.getElementById('studioTabBw').classList.remove('active'); buildStudioGrid(); });
 document.getElementById('tabBw').addEventListener('click',()=>{ curBW=true; document.getElementById('tabBw').classList.add('active'); document.getElementById('tabColor').classList.remove('active'); buildMiniGrid(); });
